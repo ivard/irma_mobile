@@ -11,6 +11,7 @@ import Error from './children/Error';
 import Footer from './children/Footer';
 import Header from './children/Header';
 import IssuedCredentials from './children/IssuedCredentials';
+import RemovalCredentials from './children/RemovalCredentials';
 import MissingDisclosures from './children/MissingDisclosures';
 import PinEntry from './children/PinEntry';
 import StatusCard from './children/StatusCard';
@@ -87,6 +88,18 @@ export default class IssuanceSession extends Component {
         break;
       }
 
+      case 'requestRemovalPermission': {
+        explanation = (
+          <View>
+            <Text>
+              { t('.requestRemovalPermission') }
+            </Text>
+          </View>
+        );
+
+        break;
+      }
+
       case 'requestDisclosurePermission': {
         explanation = (
           <View>
@@ -148,6 +161,7 @@ export default class IssuanceSession extends Component {
           />
           <MissingDisclosures session={session} />
           <IssuedCredentials session={session} />
+          <RemovalCredentials session={session} />
           { this.renderDisclosures() }
         </PaddedContent>
         <Footer

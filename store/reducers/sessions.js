@@ -26,6 +26,7 @@ const isValidSessionAction = (state, action) => {
     case 'IrmaSession.RequestIssuancePermission':
     case 'IrmaSession.RequestVerificationPermission':
     case 'IrmaSession.RequestSignaturePermission':
+    case 'IrmaSession.RequestRemovalPermission':
     case 'IrmaSession.RequestPin':
     case 'IrmaSession.KeyshareEnrollmentMissing':
     case 'IrmaSession.KeyshareEnrollmentDeleted':
@@ -145,6 +146,7 @@ export default function credentials(state = initialState, action) {
           status: 'requestPermission',
           serverName: action.serverName,
           issuedCredentials: action.issuedCredentials,
+          removalCredentials: action.removalCredentials,
           disclosures: action.disclosures,
           disclosuresCandidates: action.disclosuresCandidates,
 
@@ -181,6 +183,17 @@ export default function credentials(state = initialState, action) {
           messageType: action.messageType,
 
           disclosureChoices: initialDisclosureChoices(action.disclosuresCandidates),
+        }
+      };
+    }
+    
+    case 'IrmaSession.RequestRemovalPermission': {
+      return {
+        ...state,
+        [sessionId]: {
+          ...state[sessionId],
+          status: 'requestRemovalPermission',
+          removalCredentials: action.removalCredentials,
         }
       };
     }
