@@ -72,7 +72,7 @@ module.exports = {
     'comma-dangle': ['warn', 'always-multiline'],
     'comma-spacing': ['error'],
     'func-call-spacing': ['error', 'never'],
-    // 'indent': ['error', 2, {SwitchCase: 1}],
+    // 'indent': ['warn', 2, {SwitchCase: 1}],
     'jsx-quotes': ['error', 'prefer-double'],
     'key-spacing': 'error',
     'keyword-spacing': 'error',
@@ -107,5 +107,26 @@ module.exports = {
     'prefer-template': 'warn',
     'rest-spread-spacing': 'error',
     'template-curly-spacing': 'warn',
+
+    // React
+
+    'react/no-access-state-in-setstate': 'error',
+    'react/no-deprecated': 'off', // TODO: Turn me on after fixing deprecation; produces a class-wide redliner currently
+    'react/no-did-mount-set-state': 'error',
+    'react/no-did-update-set-state': 'error',
+    'react/no-typos': 'warn',
+    'react/no-this-in-sfc': 'warn',
+    'react/no-unused-prop-types': 'warn',
+    'react/no-unused-state': 'warn',
+    'react/no-will-update-set-state': 'error',
+    'react/prefer-es6-class': ['error', 'always'],
+    'react/require-default-props': 'error',
+    'react/jsx-curly-spacing': ['warn', {when: 'never', children: false}],
+    'react/jsx-equals-spacing': 'error',
+    'react/jsx-first-prop-new-line': ['warn'],
+    'react/jsx-indent': ['warn', 2],
+    'react/jsx-indent-props': ['warn', 2],
+    'react/jsx-props-no-multi-spaces': 'error',
+    'react/jsx-tag-spacing': 'error',
   }
 }
