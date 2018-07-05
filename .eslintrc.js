@@ -25,7 +25,7 @@ module.exports = {
     // Best practices
     'array-callback-return': 'error',
     'consistent-return': 'error',
-    'curly': ['error', 'multi-or-nest', 'consistent'],
+    'curly': ['warn', 'multi-or-nest', 'consistent'],
     'eqeqeq': 'error',
     'no-alert': 'error',
     'no-caller': 'error',
@@ -35,7 +35,6 @@ module.exports = {
     'no-floating-decimal': 'error',
     'no-implicit-coercion': 'error',
     'no-implied-eval': 'error',
-    'no-invalid-this': 'error',
     'babel/no-invalid-this': 'error',
     'no-labels': 'error',
     'no-lone-blocks': 'error',
@@ -69,15 +68,18 @@ module.exports = {
     // Stylistic
     'array-bracket-spacing': ['warn', 'never'],
     'block-spacing': ['warn', 'always'],
-    'brace-style': ['error', '1tbs'],
+    'brace-style': ['warn', '1tbs'],
     'comma-dangle': ['warn', 'always-multiline'],
-    'comma-spacing': ['error'],
-    'func-call-spacing': ['error', 'never'],
+    'comma-spacing': ['warn'],
+    'func-call-spacing': ['warn', 'never'],
+    
+    // This breaks too much, especially when including loops in JSX interpolations
     // 'indent': ['warn', 2, {SwitchCase: 1}],
+
     'jsx-quotes': ['error', 'prefer-double'],
-    'key-spacing': 'error',
-    'keyword-spacing': 'error',
-    'line-comment-position': ['warn', {position: 'above'}],
+    'key-spacing': 'warn',
+    'keyword-spacing': 'warn',
+    'line-comment-position': ['warn', {position: 'above', ignorePattern: 'TODO'}],
     'linebreak-style': ['error', 'unix'],
     'new-parens': 'error',
     'no-array-constructor': 'error',
@@ -90,15 +92,15 @@ module.exports = {
     'quote-props': ['warn', 'consistent-as-needed'],
     'quotes': ['error', 'single'],
     'semi': ['error', 'always'],
-    'semi-spacing': 'error',
+    'semi-spacing': 'warn',
     'semi-style': 'error',
-    'space-before-blocks': ['error', 'always'],
-    'space-before-function-paren': ['error', 'never'],
-    'spaced-comment': ['error', 'always'],
+    'space-before-blocks': ['warn', 'always'],
+    'space-before-function-paren': ['warn', 'never'],
+    'spaced-comment': ['warn', 'always'],
     'unicode-bom': 'error',
 
     // ECMAScript 6
-    'arrow-spacing': 'error',
+    'arrow-spacing': 'warn',
     'no-confusing-arrow': 'warn',
     'no-duplicate-imports': 'warn',
     'no-var': 'error',
@@ -110,7 +112,6 @@ module.exports = {
     'template-curly-spacing': 'warn',
 
     // React
-
     'react/no-access-state-in-setstate': 'error',
     'react/no-deprecated': 'off', // TODO: Turn me on after fixing deprecation; produces a class-wide redliner currently
     'react/no-did-mount-set-state': 'error',
