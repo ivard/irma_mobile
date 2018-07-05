@@ -15,7 +15,7 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: 'module'
   },
-  plugins: ['react'],
+  plugins: ['react', 'babel'],
   rules: {
     // Handpicked from list at: https://eslint.org/docs/rules/
 
@@ -36,6 +36,7 @@ module.exports = {
     'no-implicit-coercion': 'error',
     'no-implied-eval': 'error',
     'no-invalid-this': 'error',
+    'babel/no-invalid-this': 'error',
     'no-labels': 'error',
     'no-lone-blocks': 'error',
     'no-multi-spaces': 'warn',
