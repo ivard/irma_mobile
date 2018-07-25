@@ -99,6 +99,7 @@ export default function credentials(state = initialState, action) {
         ...state,
         [sessionId]: {
           ...state[sessionId],
+          irmaAction: action.irmaAction, // TODO: schememanager update should just use StatusUpdate at the start
           status: 'success',
           result: action.result,
         }

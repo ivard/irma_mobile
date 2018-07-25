@@ -136,7 +136,7 @@ func (sh *SessionHandler) RequestPin(remainingAttempts int, ph irmaclient.PinHan
 
 func (sh *SessionHandler) RequestSchemeManagerPermission(manager *irma.SchemeManager, callback func(proceed bool)) {
 	logDebug("Handling RequestSchemeManagerPermission")
-	callback(false)
+	callback(true)
 }
 
 func (sh *SessionHandler) KeyshareEnrollmentMissing(manager irma.SchemeManagerIdentifier) {

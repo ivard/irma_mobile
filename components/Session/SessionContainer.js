@@ -8,6 +8,7 @@ import { resetNavigation } from 'lib/navigation';
 import IssuanceSession from './IssuanceSession';
 import DisclosureSession from './DisclosureSession';
 import SigningSession from './SigningSession';
+import SchemeManagerSession from './SchemeManagerSession';
 
 import fullCredentials from 'store/mappers/fullCredentials';
 import fullDisclosuresCandidates from 'store/mappers/fullDisclosuresCandidates';
@@ -206,6 +207,9 @@ export default class SessionContainer extends Component {
         break;
       case 'signing':
         content = <SigningSession {...sessionProps} />;
+        break;
+      case 'schememanager':
+        content = <SchemeManagerSession {...sessionProps} />;
         break;
 
       // Display an empty container while awaiting irmago response
