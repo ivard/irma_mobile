@@ -26,6 +26,8 @@ var actionHandler = &ActionHandler{
 	sessionLookup: map[int]*SessionHandler{},
 }
 
+var recoveryHandler = New()
+
 // clientHandler is used for messages coming in from irmago (see client_handler.go)
 var clientHandler = &ClientHandler{}
 

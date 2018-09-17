@@ -1,10 +1,12 @@
 package irmagobridge
 
 import (
+	"encoding/hex"
 	"encoding/json"
 
 	raven "github.com/getsentry/raven-go"
 	"github.com/go-errors/errors"
+	"log"
 )
 
 func ReceiveAction(actionJSONString string) {
@@ -19,10 +21,12 @@ func recoveredReceiveAction(actionJSONString string) {
 	actionType, err := getActionType(actionJSON)
 	if err != nil {
 		logError(err)
+		log.Println(err)
 		return
 	}
 
 	logDebug("Received action with type " + actionType)
+	log.Println("Received action with type " + actionType)
 
 	switch actionType {
 	case "Enroll":
@@ -80,6 +84,25 @@ func recoveredReceiveAction(actionJSONString string) {
 		action := &SetCrashReportingPreferenceAction{}
 		if err = json.Unmarshal(actionJSON, &action); err == nil {
 			err = actionHandler.SetCrashReportingPreference(action)
+		}
+
+	case "RecoveryStart":
+		log.Println("Recovery")
+		action := RecoveryAction{}
+		if err = json.Unmarshal(actionJSON, &action); err == nil {
+			backupBytes, _ := hex.DecodeString(action.BackupData)
+			recoveryHandler.backup = backupBytes
+			log.Println(action.RecoveryPhrase)
+			recoveryHandler.recoveryPhrase = action.RecoveryPhrase
+			go client.StartRecovery(recoveryHandler)
+			newClient := <-recoveryHandler.newClient
+			if newClient != nil {
+				client = newClient
+				sendCredentials()
+				sendEnrollmentStatus()
+				sendPreferences()
+				sendRecoveryDone()
+			}
 		}
 
 	default:

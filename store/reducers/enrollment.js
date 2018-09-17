@@ -3,6 +3,7 @@ import _ from 'lodash';
 const initialState = {
   loaded: false,
   unenrolledSchemeManagerIds: [],
+  recoveryDone: false,
 
   status: null,
   error: null,
@@ -45,6 +46,13 @@ export default function enrollment(state = initialState, action) {
         status: 'failure',
         error: action.error,
       };
+    }
+
+    case 'IrmaClient.RecoveryDone': {
+      return {
+        ...state,
+        recoveryDone: true,
+      }
     }
 
     case 'Enrollment.Dismiss': {

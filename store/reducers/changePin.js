@@ -8,6 +8,7 @@ const initialState = {
 };
 
 export default function changePin(state = initialState, action) {
+console.log(action);
   switch(action.type) {
     case 'IrmaClient.EnrollmentStatus':
       return {

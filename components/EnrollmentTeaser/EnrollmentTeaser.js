@@ -26,11 +26,12 @@ export default class EnrollmentTeaser extends Component {
 
   static propTypes = {
     navigateToEnrollment: PropTypes.func.isRequired,
+    recoverEnrollment: PropTypes.func.isRequired,
     navigateToCredentialDashboard: PropTypes.func.isRequired,
   }
 
   renderFooter(index, total, swiperLib) {
-    const { navigateToEnrollment, navigateToCredentialDashboard } = this.props;
+    const { navigateToEnrollment, recoverEnrollment, navigateToCredentialDashboard } = this.props;
 
     const footerStyle = {
       height: 110,
@@ -49,6 +50,9 @@ export default class EnrollmentTeaser extends Component {
           <Button testID="enrollButton" onPress={navigateToEnrollment} style={{marginTop: 5}}>
             <Text>{ t('.openAccount') }</Text>
           </Button>
+          <Button testID="recoverButton" onPress={recoverEnrollment} style={{marginTop: 5}}>
+                      <Text>{ 'Recover' }</Text>
+                    </Button>
         </View>
         <Footer style={{height: 30, backgroundColor: 'rgba(255, 255, 255, 0.6)'}}>
           <Button testID="dismissButton" transparent small onPress={navigateToCredentialDashboard}>
