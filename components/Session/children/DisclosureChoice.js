@@ -13,6 +13,7 @@ import {
 } from 'native-base';
 
 import CredentialLogo from 'components/CredentialLogo';
+import {Image} from "react-native";
 
 const lang = getLanguage();
 
@@ -41,6 +42,22 @@ export default class DisclosureChoice extends Component {
     if(hideUnchosen && !isSelected)
       return null;
 
+    var value;
+    console.log(candidate.Type.Type);
+    switch(candidate.Type.Type) {
+      case 'image':
+        value = <Image
+          style = {{ flex: 1, width: '85%', aspectRatio: 1, resizeMode: 'contain'}}
+          source={{uri: image}}
+        />;
+        break;
+      default:
+        value = <Text style={{fontWeight: 'normal'}}>
+          { candidate.Value[lang] }
+        </Text>;
+        break;
+    }
+
     return (
       <ListItem
         key={`${candidate.Type}-${candidate.CredentialHash}`}
@@ -49,9 +66,7 @@ export default class DisclosureChoice extends Component {
         <Left>
           <CredentialLogo credentialType={candidate.CredentialType} />
           <Body>
-            <Text style={{fontWeight: 'normal'}}>
-              { candidate.Value[lang] }
-            </Text>
+            {value}
             <Text note>
               { candidate.Name[lang] }
             </Text>

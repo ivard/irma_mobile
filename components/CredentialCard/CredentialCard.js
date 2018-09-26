@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import moment from 'moment';
-import { Alert } from 'react-native';
+import { Alert, Image } from 'react-native';
 import { connect } from 'react-redux';
 
 import {
@@ -66,15 +66,30 @@ export default class CredentialCard extends Component {
 
     const hasExpired = moment.unix(credential.Expires).isBefore(currentTime);
     const expiredNameStyle = hasExpired ? {color: '#a7a7a7'} : {};
-
-    return (
-      <CardItem key={attribute.Type.ID}>
-        <Text style={expiredNameStyle}>{ attribute.Type.Name[lang] }</Text>
-        <Right style={{flex: 1}}>
-          <Text note>{ attribute.Value[lang] }</Text>
-        </Right>
-      </CardItem>
-    );
+    var value;
+    console.log(attribute.Type.Type);
+    switch(attribute.Type.Type) {
+      case 'image':
+        var image = 'data:image/jpeg;base64,' + attribute.Value[lang]; // For now only jpeg support
+        return (
+          <CardItem key={attribute.Type.ID} style={{flexDirection: 'column'}}>
+            <Text style={expiredNameStyle}>{ attribute.Type.Name[lang] }</Text>
+            <Image
+              style = {{ flex: 1, width: '85%', aspectRatio: 1, resizeMode: 'contain'}}
+              source={{uri: image}}
+            />
+          </CardItem>
+        );
+      default:
+        return (
+          <CardItem key={attribute.Type.ID}>
+            <Text style={expiredNameStyle}>{ attribute.Type.Name[lang] }</Text>
+            <Right style={{flex: 1}}>
+              <Text note>{attribute.Value[lang]}</Text>
+            </Right>
+          </CardItem>
+        );
+    }
   }
 
   render() {
