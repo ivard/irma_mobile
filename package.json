@@ -63,6 +63,7 @@
     "react-native-i18n": "^2.0.12",
     "react-native-mail": "https://github.com/martijndeh/react-native-mail#eb05983",
     "react-native-qrcode-scanner": "^0.0.30",
+    "react-native-scalable-image": "^0.4.0",
     "react-native-sentry": "^0.35.3",
     "react-native-swiper": "^1.5.13",
     "react-navigation": "^1.5.11",
