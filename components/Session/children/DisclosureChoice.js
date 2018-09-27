@@ -37,7 +37,9 @@ export default class DisclosureChoice extends Component {
     } = this.props;
 
     const press = () => makeDisclosureChoice(disclosureIndex, candidate.Type, candidate.CredentialHash);
-    const isSelected = choice.Type === candidate.Type && choice.CredentialHash === candidate.CredentialHash;
+    //const isSelected = choice.Type === candidate.Type && choice.CredentialHash === candidate.CredentialHash;
+    const isSelected = choice.CredentialHash === candidate.CredentialHash;
+    // Don't know what choice.Type did at first, but now it doesn't do that anymore
 
     if(hideUnchosen && !isSelected)
       return null;
@@ -52,7 +54,6 @@ export default class DisclosureChoice extends Component {
         />;
         break;
       default:
-        console.log(candidate.Value[lang]);
         value = <Text style={{fontWeight: 'normal'}}>
           { candidate.Value[lang] }
         </Text>;
@@ -81,7 +82,6 @@ export default class DisclosureChoice extends Component {
   }
 
   render() {
-    console.log("Disclosing");
     const {
       candidates,
       disclosure,
