@@ -7,7 +7,7 @@ import { connect } from 'react-redux';
 import {
   CardItem,
   Right,
-  Text,
+  Text, View
 } from 'native-base';
 
 import CredentialLogo from 'components/CredentialLogo';
@@ -72,12 +72,14 @@ export default class CredentialCard extends Component {
       case 'image':
         var image = 'data:image/jpeg;base64,' + attribute.Value[lang]; // For now only jpeg support
         return (
-          <CardItem key={attribute.Type.ID} style={{flexDirection: 'column'}}>
+          <CardItem key={attribute.Type.ID} style={{flexDirection: 'column', alignContent: 'flex-start', alignItems: 'flex-start'}}>
             <Text style={expiredNameStyle}>{ attribute.Type.Name[lang] }</Text>
-            <Image
-              style = {{ flex: 1, width: '85%', aspectRatio: 1, resizeMode: 'contain'}}
-              source={{uri: image}}
-            />
+            <View style = {{ width: '85%', flexDirection: 'row', flexWrap: 'wrap'}}>
+              <Image
+                style = {{aspectRatio: 1, width: '100%', resizeMode: 'cover'}}
+                source={{uri: image}}
+              />
+            </View>
           </CardItem>
         );
       default:

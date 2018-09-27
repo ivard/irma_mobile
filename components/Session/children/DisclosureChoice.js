@@ -43,15 +43,16 @@ export default class DisclosureChoice extends Component {
       return null;
 
     var value;
-    console.log(candidate.Type.Type);
-    switch(candidate.Type.Type) {
+    switch(candidate.Type) {
       case 'image':
+        var image = 'data:image/jpeg;base64,' + candidate.Value[lang]; // For now only jpeg support
         value = <Image
           style = {{ flex: 1, width: '85%', aspectRatio: 1, resizeMode: 'contain'}}
           source={{uri: image}}
         />;
         break;
       default:
+        console.log(candidate.Value[lang]);
         value = <Text style={{fontWeight: 'normal'}}>
           { candidate.Value[lang] }
         </Text>;
@@ -80,6 +81,7 @@ export default class DisclosureChoice extends Component {
   }
 
   render() {
+    console.log("Disclosing");
     const {
       candidates,
       disclosure,
