@@ -66,8 +66,9 @@ export default class CredentialCard extends Component {
     const { credential, currentTime } = this.props;
 
     const hasExpired = moment.unix(credential.Expires).isBefore(currentTime);
-    const expiredNameStyle = hasExpired ? {color: '#a7a7a7'} : {};
+    const expiredNameStyle = hasExpired ? {color: '#a7a7a7', marginBottom: 8} : {marginBottom: 8};
     var value;
+    console.log(attribute.Type.Type);
     switch(attribute.Type.Type) {
       case 'image':
         var image = 'data:image/jpeg;base64,' + attribute.Value[lang]; // For now only jpeg support

@@ -71,13 +71,15 @@ export default class DisclosureChoice extends Component {
           <Body>
             {value}
             <Text note>
-              { candidate.Name[lang] }
+              { candidate.Name[lang] === 'Foto' ? null : candidate.Name[lang] }
             </Text>
           </Body>
         </Left>
-        <Right>
-          <Radio selected={isSelected} />
-        </Right>
+        {hideUnchosen ? null :
+          <Right>
+            <Radio selected={isSelected}/>
+          </Right>
+        }
       </ListItem>
     );
   }
