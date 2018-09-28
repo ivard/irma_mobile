@@ -13,7 +13,8 @@ import {
 } from 'native-base';
 
 import CredentialLogo from 'components/CredentialLogo';
-import {Image} from "react-native";
+import {Dimensions} from "react-native";
+import Image from 'react-native-scalable-image';
 
 const lang = getLanguage();
 
@@ -49,7 +50,7 @@ export default class DisclosureChoice extends Component {
       case 'image':
         var image = 'data:image/jpeg;base64,' + candidate.Value[lang]; // For now only jpeg support
         value = <Image
-          style = {{ flex: 1, width: '85%', aspectRatio: 1, resizeMode: 'contain'}}
+          width={Dimensions.get('window').width * 0.4}
           source={{uri: image}}
         />;
         break;
