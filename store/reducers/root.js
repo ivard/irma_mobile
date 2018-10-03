@@ -7,6 +7,7 @@ import enrollment from './enrollment';
 import sessions from './sessions';
 import currentTime from './currentTime';
 import changePin from './changePin';
+import recovery from "./recovery";
 
 export default combineReducers({
   credentials,
@@ -16,4 +17,5 @@ export default combineReducers({
   sessions,
   currentTime,
   changePin,
+  recovery,
 });

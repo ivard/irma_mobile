@@ -42,7 +42,7 @@ export default class EnrollmentTeaserContainer extends Component {
   }
 
   recoverEnrollment() {
-    const { dispatch, navigation } = this.props;
+    const { dispatch } = this.props;
 
     if (this.props.status !== 'recovering') {
       dispatch({

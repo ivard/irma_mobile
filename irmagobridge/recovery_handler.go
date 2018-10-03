@@ -10,8 +10,14 @@ type RecoveryAction struct {
 	RecoveryPhrase []string
 }
 
+type RecoveryPinAction struct {
+	Pin     string
+	Proceed bool
+}
+
 type RecoveryHandler struct {
 	newClient      chan *irmaclient.Client
+	pin            chan *string
 	backup         []byte
 	recoveryPhrase []string
 }
@@ -19,17 +25,27 @@ type RecoveryHandler struct {
 func New() *RecoveryHandler {
 	return &RecoveryHandler{
 		newClient:      make(chan *irmaclient.Client),
+		pin:            make(chan *string),
 		backup:         nil,
 		recoveryPhrase: nil,
 	}
 }
 
 func (rh *RecoveryHandler) RecoveryCancelled() {
+	log.Println("Recovery cancelled")
 	rh.newClient <- nil
 }
 
 func (rh *RecoveryHandler) RequestPin(remainingAttempts int, callback irmaclient.PinHandler) {
-	callback(true, "12345")
+	log.Println("PIN requested for recovery")
+	sendAction(&OutgoingAction{
+		"type":              "IrmaClient.RecoveryStatus",
+		"status":            "requestPin",
+		"remainingAttempts": remainingAttempts,
+	})
+
+	p := <-rh.pin
+	callback(p != nil, *p)
 }
 
 func (rh *RecoveryHandler) RequestPhrase(callback irmaclient.PhraseHandler) {
@@ -38,6 +54,8 @@ func (rh *RecoveryHandler) RequestPhrase(callback irmaclient.PhraseHandler) {
 }
 
 func (rh *RecoveryHandler) ShowPhrase(phrase []string) {
+	log.Println(phrase)
+	sendRecoveryPhrase(phrase)
 }
 
 func (rh *RecoveryHandler) OutputBackup(backup []byte) {
@@ -53,6 +71,7 @@ func (rh *RecoveryHandler) RecoveryPinOk() {
 
 func (rh *RecoveryHandler) RecoveryInitSuccess() {
 	log.Println("Recovery init successful")
+	sendRecoveryIsConfigured()
 }
 
 func (rh *RecoveryHandler) RecoveryPerformed(newClient *irmaclient.Client) {
@@ -61,7 +80,13 @@ func (rh *RecoveryHandler) RecoveryPerformed(newClient *irmaclient.Client) {
 }
 
 func (rh *RecoveryHandler) RecoveryBlocked(duration int) {
-	rh.newClient <- nil
+	//TODO: Handle wrong PINs
+	sendAction(&OutgoingAction{
+		"type":              "IrmaClient.RecoveryStatus",
+		"status":            "blocked",
+		"remainingAttempts": 0,
+		"blocked":           duration,
+	})
 }
 
 func (rh *RecoveryHandler) RecoveryError(err error) {

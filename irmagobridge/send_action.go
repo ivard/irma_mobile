@@ -45,6 +45,24 @@ func sendRecoveryDone() {
 	})
 }
 
+func sendRecoveryPhrase(phrase []string) {
+	sendAction(&OutgoingAction{
+		"type":   "IrmaClient.RecoveryShowPhrase",
+		"phrase": phrase,
+	})
+}
+
+func sendRecoveryIsConfigured() {
+	status := ""
+	if client.RecoveryIsConfigured() {
+		status = "configured"
+	}
+	sendAction(&OutgoingAction{
+		"type":   "IrmaClient.RecoveryStatus",
+		"status": status,
+	})
+}
+
 func sendAction(action *OutgoingAction) {
 	jsonBytes, err := json.Marshal(action)
 	if err != nil {

@@ -74,6 +74,11 @@ const sidebarListItems = [
     },
   },
   {
+    icon: {name: 'md-cloud-upload'},
+    text: "Make backup",
+    navigateTo: 'RecoveryMakeBackup'
+  },
+  {
     icon: {name: 'md-help'},
     text: t('.about'),
     navigateTo: 'About',

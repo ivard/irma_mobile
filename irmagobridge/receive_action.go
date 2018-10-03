@@ -105,6 +105,23 @@ func recoveredReceiveAction(actionJSONString string) {
 			}
 		}
 
+	case "RecoveryInit":
+		log.Println("Initializing recovery")
+		go client.InitRecovery(recoveryHandler)
+
+	case "RecoveryInitPin":
+		action := RecoveryPinAction{}
+		log.Println(actionJSON)
+		if err = json.Unmarshal(actionJSON, &action); err == nil {
+			log.Println(action)
+			log.Println(action.Proceed)
+			if !action.Proceed {
+				recoveryHandler.pin <- nil
+				return
+			}
+			recoveryHandler.pin <- &action.Pin
+		}
+
 	default:
 		err = errors.Errorf("Unrecognized action type %s", actionType)
 	}

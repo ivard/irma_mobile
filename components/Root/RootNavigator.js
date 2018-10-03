@@ -1,4 +1,4 @@
-import { DrawerNavigator, StackNavigator } from 'react-navigation';
+import {DrawerNavigator, StackNavigator} from 'react-navigation';
 
 import About from 'components/About';
 import CredentialDashboard from 'components/CredentialDashboard';
@@ -9,6 +9,7 @@ import PreferencesDashboard from 'components/PreferencesDashboard';
 import QRScanner from 'components/QRScanner';
 import Session from 'components/Session';
 import Sidebar from './children/Sidebar';
+import RecoveryMakeBackup from "components/RecoveryMakeBackup";
 
 const CredentialDashboardNavigator = StackNavigator({
   About: About,
@@ -19,6 +20,7 @@ const CredentialDashboardNavigator = StackNavigator({
   PreferencesDashboard: PreferencesDashboard,
   QRScanner: QRScanner,
   Session: Session,
+  RecoveryMakeBackup: RecoveryMakeBackup,
 }, {
   initialRouteName: 'CredentialDashboard',
 });

@@ -73,6 +73,7 @@ func recoveredStart(givenBridge IrmaBridge, appDataPath string, assetsPath strin
 	sendConfiguration()
 	sendPreferences()
 	sendEnrollmentStatus()
+	sendRecoveryIsConfigured()
 	sendCredentials()
 }
 
