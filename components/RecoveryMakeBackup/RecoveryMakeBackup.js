@@ -12,6 +12,8 @@ import PropTypes from 'prop-types';
 import {connect} from "react-redux";
 import PinEntry from "../Session/children/PinEntry";
 import KeyboardAwareContainer from "../../lib/KeyboardAwareContainer";
+import { canSendMail } from 'lib/mail.js';
+import {sendMail} from "lib/mail";
 
 const mapStateToProps = (state) => {
   const {
@@ -20,6 +22,7 @@ const mapStateToProps = (state) => {
       status,
       remainingAttempts,
       blocked,
+      backup,
     }
   } = state;
 
@@ -28,6 +31,7 @@ const mapStateToProps = (state) => {
     status,
     remainingAttempts,
     blocked,
+    backup,
   };
 };
 
@@ -37,9 +41,10 @@ export default class RecoveryMakeBackup extends Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     phrase: PropTypes.arrayOf(PropTypes.string),
-    status: PropTypes.string,
+    status: PropTypes.string.isRequired,
     remainingAttempts: PropTypes.number.isRequired,
     blocked: PropTypes.number.isRequired,
+    backup: PropTypes.string,
   };
 
   state = {
@@ -48,12 +53,12 @@ export default class RecoveryMakeBackup extends Component {
     showPhrase: false,
     pin: "",
     validationForced: false,
+    makingBackup: false,
   };
 
   initRecovery() {
     if (!this.state.initializing) {
       console.log("Init!");
-      console.log(this.props);
       const {dispatch} = this.props;
 
       this.setState({
@@ -110,14 +115,30 @@ export default class RecoveryMakeBackup extends Component {
     });
   }
 
+  makeBackup() {
+    this.setState({
+      makingBackup: true,
+    });
+
+    this.props.dispatch({
+      type: 'IrmaBridge.RecoveryMakeBackup',
+    });
+  }
+
+  sendBackup() {
+    this.setState({
+      makingBackup: false,
+    });
+
+    sendMail(this.props.backup, {from: 'ivarderksen@gmail.com'})
+    //TODO: Replace email address with address from a certain field
+  }
+
   render() {
     console.log("Hallo");
-    console.log(this.props.status);
-    console.log(this.state.phraseWrittenDown);
-    if (this.props.status === 'configured') {
-      return (
-        <Text>Hallo!</Text>
-      );
+    console.log(this.props);
+    if (this.props.status.includes('backup')) {
+      return this.renderMakeBackup();
     }
     else if (this.props.status === 'requestPin' && this.state.phraseWrittenDown) {
       return this.renderPinRequest();
@@ -128,33 +149,69 @@ export default class RecoveryMakeBackup extends Component {
       </Text></CardItem></Card>
     }
     else {
-      return (
-        <Container>
-          <PaddedContent>
-            <Card>
-              <CardItem>
-                <H3 style={{textAlign: 'center'}}>
-                  Recovery Initialization
-                </H3>
-              </CardItem>
-              <CardItem>
-                <Text>
-                  Recovery must be initialized first.
-                </Text>
-              </CardItem>
-              <CardItem>
-                <Button
-                  onPress={::this.initRecovery}
-                  title={this.state.initializing ? 'Initializing...' : "Initialize"}
-                  color={this.state.initializing ? '#8C8C8C' : "#841584"}
-                />
-              </CardItem>
-            </Card>
-            {this.renderPhrase()}
-          </PaddedContent>
-        </Container>
-      );
+      return this.renderRecoveryInit();
     }
+  }
+
+  renderMakeBackup() {
+    let button = null, done = null;
+    if (!this.state.makingBackup) {
+      button =
+        <View style={[{ width: "90%", margin: 10}]}>
+          <Button title={'Make backup'} onPress={::this.makeBackup}/>
+        </View>;
+      if (this.props.status === 'backupReady') {
+        done = <CardItem><Text>Your backup has been sent.</Text></CardItem>
+      }
+    }
+
+    return (
+      <Container>
+        <PaddedContent>
+          <Card>
+            <CardItem>
+              <Text>
+                By pressing the button below a backup file of all your credentials will be generated. This backup will
+                be sent to you by mail.
+              </Text>
+            </CardItem>
+            { done }
+          </Card>
+        </PaddedContent>
+        <Footer>
+          { button }
+        </Footer>
+      </Container>
+    );
+  }
+
+  renderRecoveryInit() {
+    return (
+      <Container>
+        <PaddedContent>
+          <Card>
+            <CardItem>
+              <H3 style={{textAlign: 'center'}}>
+                Recovery Initialization
+              </H3>
+            </CardItem>
+            <CardItem>
+              <Text>
+                Recovery must be initialized first.
+              </Text>
+            </CardItem>
+            <CardItem>
+              <Button
+                onPress={::this.initRecovery}
+                title={this.state.initializing ? 'Initializing...' : "Initialize"}
+                color={this.state.initializing ? '#8C8C8C' : "#841584"}
+              />
+            </CardItem>
+          </Card>
+          {this.renderPhrase()}
+        </PaddedContent>
+      </Container>
+    );
   }
 
   renderPinRequest() {
@@ -186,14 +243,15 @@ export default class RecoveryMakeBackup extends Component {
     const {phrase} = this.props;
 
     if (!this.state.showPhrase) {
-      return (null);
+      return null;
     }
 
     let phraseRendered = phrase.map(( (p, index) => {
       return <CardItem key={'phrase:' + index} bordered={true}><Text>{p}</Text></CardItem>
     }));
 
-    return <Card>
+    return (
+      <Card>
         <CardItem><Text>Write down the following words and keep it safe. You need these words when restoring one of your backups.</Text></CardItem>
         {phraseRendered}
         <CardItem>
@@ -202,7 +260,8 @@ export default class RecoveryMakeBackup extends Component {
           title='Continue'
           color={"#841584"}
         /></CardItem>
-      </Card>;
+      </Card>
+    );
   }
 
   componentDidUpdate(prevProps) {
@@ -213,16 +272,8 @@ export default class RecoveryMakeBackup extends Component {
         showPhrase: true,
       });
     }
+    if (prevProps.status !== this.props.status && this.props.status === 'backupReady') {
+      this.sendBackup();
+    }
   }
 }
-
-/*
-const styles = StyleSheet.create({
-  baseText: {
-    fontFamily: 'Cochin',
-  },
-  titleText: {
-    fontSize: 20,
-    fontWeight: 'bold',
-  },
-});*/

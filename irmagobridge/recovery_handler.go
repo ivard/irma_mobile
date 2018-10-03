@@ -1,6 +1,7 @@
 package irmagobridge
 
 import (
+	"encoding/base64"
 	"github.com/privacybydesign/irmago/irmaclient"
 	"log"
 )
@@ -59,7 +60,11 @@ func (rh *RecoveryHandler) ShowPhrase(phrase []string) {
 }
 
 func (rh *RecoveryHandler) OutputBackup(backup []byte) {
-
+	log.Println("Output backup file")
+	sendAction(&OutgoingAction{
+		"type":   "IrmaClient.RecoveryBackup",
+		"backup": base64.StdEncoding.EncodeToString(backup),
+	})
 }
 
 func (rh *RecoveryHandler) GetBackup(callback irmaclient.BackupHandler) {

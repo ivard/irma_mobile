@@ -53,13 +53,9 @@ func sendRecoveryPhrase(phrase []string) {
 }
 
 func sendRecoveryIsConfigured() {
-	status := ""
-	if client.RecoveryIsConfigured() {
-		status = "configured"
-	}
 	sendAction(&OutgoingAction{
-		"type":   "IrmaClient.RecoveryStatus",
-		"status": status,
+		"type":         "IrmaClient.RecoveryStatus",
+		"isConfigured": client.RecoveryIsConfigured(),
 	})
 }
 

@@ -122,6 +122,10 @@ func recoveredReceiveAction(actionJSONString string) {
 			recoveryHandler.pin <- &action.Pin
 		}
 
+	case "RecoveryMakeBackup":
+		log.Println("Making backup")
+		go client.MakeBackup(recoveryHandler)
+
 	default:
 		err = errors.Errorf("Unrecognized action type %s", actionType)
 	}
