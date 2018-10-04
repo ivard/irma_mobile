@@ -13,7 +13,7 @@ import fullCredentials from 'store/mappers/fullCredentials';
 import fullDisclosuresCandidates from 'store/mappers/fullDisclosuresCandidates';
 import fullMissingDisclosures from 'store/mappers/fullMissingDisclosures';
 
-import { sendMail } from 'lib/mail';
+import { sendSignatureMail } from 'lib/mail';
 
 import {
   Container,
@@ -88,7 +88,7 @@ export default class SessionContainer extends Component {
 
   sendMail() {
     const { session: { result, request }} = this.props;
-    sendMail(result, JSON.parse(request));
+    sendSignatureMail(result, JSON.parse(request));
   }
 
   navigateToEnrollment() {

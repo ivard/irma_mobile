@@ -12,8 +12,7 @@ import PropTypes from 'prop-types';
 import {connect} from "react-redux";
 import PinEntry from "../Session/children/PinEntry";
 import KeyboardAwareContainer from "../../lib/KeyboardAwareContainer";
-import { canSendMail } from 'lib/mail.js';
-import {sendMail} from "lib/mail";
+import {sendBackupMail} from "lib/mail";
 
 const mapStateToProps = (state) => {
   const {
@@ -130,7 +129,7 @@ export default class RecoveryMakeBackup extends Component {
       makingBackup: false,
     });
 
-    sendMail(this.props.backup, {from: 'ivarderksen@gmail.com'})
+    sendBackupMail(this.props.backup, {from: 'ivarderksen@gmail.com'})
     //TODO: Replace email address with address from a certain field
   }
 

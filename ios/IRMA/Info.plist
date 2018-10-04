@@ -115,6 +115,21 @@
 				<string>irmarequest</string>
 			</dict>
 		</dict>
+		<dict>
+            <key>UTTypeConformsTo</key>
+            <array>
+                <string>public.data</string>
+            </array>
+            <key>UTTypeDescription</key>
+            <string>IRMA backup</string>
+            <key>UTTypeIdentifier</key>
+            <string>foundation.privacybydesign.irmabackup</string>
+            <key>UTTypeTagSpecification</key>
+            <dict>
+                <key>public.filename-extension</key>
+                <string>irmabackup</string>
+            </dict>
+        </dict>
 	</array>
 </dict>
 </plist>
