@@ -1,10 +1,10 @@
 package irmagobridge
 
 import (
-	"encoding/hex"
+	"encoding/base64"
 	"encoding/json"
 
-	raven "github.com/getsentry/raven-go"
+	"github.com/getsentry/raven-go"
 	"github.com/go-errors/errors"
 	"log"
 )
@@ -86,23 +86,13 @@ func recoveredReceiveAction(actionJSONString string) {
 			err = actionHandler.SetCrashReportingPreference(action)
 		}
 
-	case "RecoveryStart":
-		log.Println("Recovery")
-		action := RecoveryAction{}
+	case "RecoveryLoadBackup":
+		log.Println("RecoveryLoadBackup")
+		action := RecoveryLoadBackupAction{}
 		if err = json.Unmarshal(actionJSON, &action); err == nil {
-			backupBytes, _ := hex.DecodeString(action.BackupData)
+			backupBytes, _ := base64.StdEncoding.DecodeString(action.BackupData)
 			recoveryHandler.backup = backupBytes
-			log.Println(action.RecoveryPhrase)
-			recoveryHandler.recoveryPhrase = action.RecoveryPhrase
 			go client.StartRecovery(recoveryHandler)
-			newClient := <-recoveryHandler.newClient
-			if newClient != nil {
-				client = newClient
-				sendCredentials()
-				sendEnrollmentStatus()
-				sendPreferences()
-				sendRecoveryDone()
-			}
 		}
 
 	case "RecoveryInit":
@@ -111,7 +101,6 @@ func recoveredReceiveAction(actionJSONString string) {
 
 	case "RecoveryInitPin":
 		action := RecoveryPinAction{}
-		log.Println(actionJSON)
 		if err = json.Unmarshal(actionJSON, &action); err == nil {
 			log.Println(action)
 			log.Println(action.Proceed)
@@ -120,6 +109,12 @@ func recoveredReceiveAction(actionJSONString string) {
 				return
 			}
 			recoveryHandler.pin <- &action.Pin
+		}
+
+	case "RecoveryLoadPhrase":
+		action := RecoveryLoadPhraseAction{}
+		if err = json.Unmarshal(actionJSON, &action); err == nil {
+			recoveryHandler.recoveryPhrase <- action.RecoveryPhrase
 		}
 
 	case "RecoveryMakeBackup":

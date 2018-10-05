@@ -117,7 +117,22 @@ export default class RootContainer extends Component {
   handleContentUrl(url, navigator) {
     RNFS.readFile(url, 'utf8')
       .then(result => {
-        const sigRequest = JSON.parse(result);
+        const { dispatch } = this.props;
+
+        const request = JSON.parse(result);
+
+        if (request.type === 'irmabackup') {
+          dispatch({
+            type: 'IrmaBridge.LoadBackup',
+            backupData: request.data,
+          });
+
+          navigator.dispatch(
+            NavigationActions.navigate({
+              routeName: 'RecoveryLoadBackup',
+            })
+          );
+        }
 
         if (!validateSigrequest(sigRequest)) {
            Alert.alert(
@@ -129,13 +144,14 @@ export default class RootContainer extends Component {
           return;
         }
 
-        const { dispatch } = this.props;
         dispatch({
           type: 'IrmaBridge.NewManualSession',
           sessionId: 0,
           request: JSON.stringify(sigRequest),
           exitAfter: false,
         });
+
+
 
         navigator.dispatch(
           NavigationActions.navigate({

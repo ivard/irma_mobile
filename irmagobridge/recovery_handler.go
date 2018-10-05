@@ -6,8 +6,11 @@ import (
 	"log"
 )
 
-type RecoveryAction struct {
-	BackupData     string
+type RecoveryLoadBackupAction struct {
+	BackupData string
+}
+
+type RecoveryLoadPhraseAction struct {
 	RecoveryPhrase []string
 }
 
@@ -17,24 +20,22 @@ type RecoveryPinAction struct {
 }
 
 type RecoveryHandler struct {
-	newClient      chan *irmaclient.Client
 	pin            chan *string
 	backup         []byte
-	recoveryPhrase []string
+	recoveryPhrase chan []string
 }
 
 func New() *RecoveryHandler {
 	return &RecoveryHandler{
-		newClient:      make(chan *irmaclient.Client),
 		pin:            make(chan *string),
+		recoveryPhrase: make(chan []string),
 		backup:         nil,
-		recoveryPhrase: nil,
 	}
 }
 
 func (rh *RecoveryHandler) RecoveryCancelled() {
 	log.Println("Recovery cancelled")
-	rh.newClient <- nil
+	// TODO communicate to user
 }
 
 func (rh *RecoveryHandler) RequestPin(remainingAttempts int, callback irmaclient.PinHandler) {
@@ -50,8 +51,9 @@ func (rh *RecoveryHandler) RequestPin(remainingAttempts int, callback irmaclient
 }
 
 func (rh *RecoveryHandler) RequestPhrase(callback irmaclient.PhraseHandler) {
-	log.Println(rh.recoveryPhrase)
-	callback(true, rh.recoveryPhrase)
+	log.Println("Recovery phrase requested")
+	phrase := <-rh.recoveryPhrase
+	callback(true, phrase)
 }
 
 func (rh *RecoveryHandler) ShowPhrase(phrase []string) {
@@ -68,6 +70,7 @@ func (rh *RecoveryHandler) OutputBackup(backup []byte) {
 }
 
 func (rh *RecoveryHandler) GetBackup(callback irmaclient.BackupHandler) {
+	// Backup is set at initalization, so no channel is needed for now
 	callback(true, rh.backup)
 }
 
@@ -81,7 +84,13 @@ func (rh *RecoveryHandler) RecoveryInitSuccess() {
 
 func (rh *RecoveryHandler) RecoveryPerformed(newClient *irmaclient.Client) {
 	log.Println("Recovery was successful")
-	rh.newClient <- newClient
+	if newClient != nil {
+		client = newClient
+		sendCredentials()
+		sendEnrollmentStatus()
+		sendPreferences()
+		sendRecoveryDone()
+	}
 }
 
 func (rh *RecoveryHandler) RecoveryBlocked(duration int) {
@@ -97,5 +106,4 @@ func (rh *RecoveryHandler) RecoveryBlocked(duration int) {
 func (rh *RecoveryHandler) RecoveryError(err error) {
 	log.Println("Error in recovery")
 	log.Println(err)
-	rh.newClient <- nil
 }

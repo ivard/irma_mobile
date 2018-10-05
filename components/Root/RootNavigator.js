@@ -10,6 +10,7 @@ import QRScanner from 'components/QRScanner';
 import Session from 'components/Session';
 import Sidebar from './children/Sidebar';
 import RecoveryMakeBackup from "components/RecoveryMakeBackup";
+import RecoveryLoadBackup from "components/RecoveryLoadBackup";
 
 const CredentialDashboardNavigator = StackNavigator({
   About: About,
@@ -21,6 +22,7 @@ const CredentialDashboardNavigator = StackNavigator({
   QRScanner: QRScanner,
   Session: Session,
   RecoveryMakeBackup: RecoveryMakeBackup,
+  RecoveryLoadBackup: RecoveryLoadBackup,
 }, {
   initialRouteName: 'CredentialDashboard',
 });
