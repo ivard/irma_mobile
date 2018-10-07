@@ -11,6 +11,7 @@ import PropTypes from 'prop-types';
 import {connect} from "react-redux";
 import PinEntry from "../Session/children/PinEntry";
 import FormInput from "../../lib/form/FormInput";
+import {Alert} from "react-native";
 
 const mapStateToProps = (state) => {
   const {
@@ -32,6 +33,8 @@ export default class RecoveryLoadBackup extends Component {
   state = {
     words: [],
     currentWord: '',
+    remainingAttempts: PropTypes.number.isRequired,
+    blocked: PropTypes.number.isRequired,
   };
 
   sendPin(proceed){
@@ -70,13 +73,16 @@ export default class RecoveryLoadBackup extends Component {
     console.log(currentWord);
     this.setState({
       words: words.concat(currentWord),
+      currentWord: '',
     });
   }
 
   wordChanged(word) {
-    this.setState({
-      currentWord: word,
-    });
+    if (this.state.currentWord !== word) {
+      this.setState({
+        currentWord: word,
+      });
+    }
   }
 
   deleteWord(index) {
@@ -89,12 +95,34 @@ export default class RecoveryLoadBackup extends Component {
     });
   }
 
+  sendPhrase() {
+    const {dispatch} = this.props;
+    const {words} = this.state;
+
+    if (words.length == 12) {
+      dispatch({
+        type: 'IrmaBridge.RecoveryLoadPhrase',
+        recoveryPhrase: words,
+      });
+    }
+    else {
+      Alert.alert(
+        'Not enough words',
+        'A recovery phrase needs 12 words.',
+        [
+          {text: 'OK'},
+        ],
+        { cancelable: false }
+      );
+    }
+  }
+
   render() {
     return this.renderRequestPhrase();
   }
 
   renderRequestPhrase() {
-    const {words} = this.state;
+    const {words, currentWord} = this.state;
     console.log(words);
 
     console.log("Rendering words");
@@ -123,11 +151,11 @@ export default class RecoveryLoadBackup extends Component {
             {wordsRendered}
           </Card>
         </PaddedContent>
+        <Button primary full onPress={::this.sendPhrase}><Text>Continue</Text></Button>
         <Footer>
-          <Button primary title={'Continue'} onPress={() => console.log("Send")}/>
           <View style={[{ width: "95%", flexDirection: 'row'}]}>
             <View style={{flex: 5, marginRight: 5}}>
-              <Input onChangeText={::this.wordChanged} placeholder='New word'/>
+              <Input value={currentWord} autoCapitalize='none' onChangeText={::this.wordChanged} placeholder='New word'/>
             </View>
             <View style={{flex: 1, padding: 5}}>
               <Button primary full onPress={::this.addWord}>
