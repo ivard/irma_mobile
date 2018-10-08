@@ -13,60 +13,17 @@ import PinEntry from "../Session/children/PinEntry";
 import FormInput from "../../lib/form/FormInput";
 import {Alert} from "react-native";
 
-const mapStateToProps = (state) => {
-  const {
-    recovery: {
-    }
-  } = state;
-
-  return {
-  };
-};
-
-@connect(mapStateToProps)
 export default class RecoveryLoadBackup extends Component {
 
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
+    changePinRequestReady: PropTypes.func.isRequired,
   };
 
   state = {
     words: [],
     currentWord: '',
-    remainingAttempts: PropTypes.number.isRequired,
-    blocked: PropTypes.number.isRequired,
   };
-
-  sendPin(proceed){
-    const { pin } = this.state;
-    if (!pin) {
-      this.setState({
-        validationForced: true
-      });
-    }
-    else {
-      this.props.dispatch({
-        type: 'IrmaBridge.RecoveryInitPin',
-        pin: pin,
-        proceed: proceed,
-      });
-    }
-    if (!proceed) {
-      this.navigateBack();
-    }
-  }
-
-  navigateBack() {
-    const { navigation } = this.props;
-    navigation.goBack();
-  }
-
-  pinChange(pin) {
-    console.log("PIN change", pin);
-    this.setState({
-      pin,
-    });
-  }
 
   addWord() {
     const {words, currentWord} = this.state;
@@ -96,7 +53,7 @@ export default class RecoveryLoadBackup extends Component {
   }
 
   sendPhrase() {
-    const {dispatch} = this.props;
+    const {dispatch, changePinRequestReady} = this.props;
     const {words} = this.state;
 
     if (words.length == 12) {
@@ -104,6 +61,8 @@ export default class RecoveryLoadBackup extends Component {
         type: 'IrmaBridge.RecoveryLoadPhrase',
         recoveryPhrase: words,
       });
+
+      changePinRequestReady(true);
     }
     else {
       Alert.alert(
@@ -166,8 +125,5 @@ export default class RecoveryLoadBackup extends Component {
         </Footer>
       </KeyboardAwareContainer>
     );
-  }
-
-  componentDidUpdate(prevProps, prevState) {
   }
 }

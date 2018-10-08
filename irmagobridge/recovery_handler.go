@@ -27,8 +27,8 @@ type RecoveryHandler struct {
 
 func New() *RecoveryHandler {
 	return &RecoveryHandler{
-		pin:            make(chan *string),
-		recoveryPhrase: make(chan []string),
+		pin:            make(chan *string, 1),
+		recoveryPhrase: make(chan []string, 1),
 		backup:         nil,
 	}
 }

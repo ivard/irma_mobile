@@ -89,8 +89,11 @@ func recoveredReceiveAction(actionJSONString string) {
 	case "RecoveryLoadBackup":
 		log.Println("RecoveryLoadBackup")
 		action := RecoveryLoadBackupAction{}
+		log.Println(actionJSON)
 		if err = json.Unmarshal(actionJSON, &action); err == nil {
+			log.Println("No error")
 			backupBytes, _ := base64.StdEncoding.DecodeString(action.BackupData)
+			log.Println("backup decoded")
 			recoveryHandler.backup = backupBytes
 			go client.StartRecovery(recoveryHandler)
 		}
@@ -113,7 +116,9 @@ func recoveredReceiveAction(actionJSONString string) {
 
 	case "RecoveryLoadPhrase":
 		action := RecoveryLoadPhraseAction{}
+		log.Println(actionJSON)
 		if err = json.Unmarshal(actionJSON, &action); err == nil {
+			log.Println("Channel hit")
 			recoveryHandler.recoveryPhrase <- action.RecoveryPhrase
 		}
 

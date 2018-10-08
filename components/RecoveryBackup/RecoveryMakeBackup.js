@@ -14,41 +14,18 @@ import PinEntry from "../Session/children/PinEntry";
 import KeyboardAwareContainer from "../../lib/KeyboardAwareContainer";
 import {sendBackupMail} from "lib/mail";
 
-const mapStateToProps = (state) => {
-  const {
-    recovery: {
-      phrase,
-      status,
-      remainingAttempts,
-      blocked,
-      backup,
-    }
-  } = state;
-
-  return {
-    phrase,
-    status,
-    remainingAttempts,
-    blocked,
-    backup,
-  };
-};
-
-@connect(mapStateToProps)
 export default class RecoveryMakeBackup extends Component {
 
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     phrase: PropTypes.arrayOf(PropTypes.string),
     status: PropTypes.string.isRequired,
-    remainingAttempts: PropTypes.number.isRequired,
-    blocked: PropTypes.number.isRequired,
     backup: PropTypes.string,
+    changePinRequestReady: PropTypes.func.isRequired,
   };
 
   state = {
     initializing: false,
-    phraseWrittenDown: false,
     showPhrase: false,
     pin: "",
     validationForced: false,
@@ -77,41 +54,15 @@ export default class RecoveryMakeBackup extends Component {
       'Are you sure you wrote down the words? The words will be deleted from your phone permanently.',
       [
         {text: 'Cancel', style: 'cancel'},
-        {text: 'OK', onPress: () => {console.log("Hallo?"); this.setState({...this.state, phraseWrittenDown: true,})}},
+        {text: 'OK', onPress: () => this.props.changePinRequestReady(true)},
       ],
       { cancelable: false }
     );
   }
 
-  sendPin(proceed){
-    const { pin } = this.state;
-    if (!pin) {
-      this.setState({
-        validationForced: true
-      });
-    }
-    else {
-      this.props.dispatch({
-        type: 'IrmaBridge.RecoveryInitPin',
-        pin: pin,
-        proceed: proceed,
-      });
-    }
-    if (!proceed) {
-      this.navigateBack();
-    }
-  }
-
   navigateBack() {
     const { navigation } = this.props;
     navigation.goBack();
-  }
-
-  pinChange(pin) {
-    console.log("PIN change", pin);
-    this.setState({
-      pin,
-    });
   }
 
   makeBackup() {
@@ -134,18 +85,9 @@ export default class RecoveryMakeBackup extends Component {
   }
 
   render() {
-    console.log("Hallo");
-    console.log(this.props);
+    console.log("RecoveryMakeBackup")
     if (this.props.status.includes('backup')) {
       return this.renderMakeBackup();
-    }
-    else if (this.props.status === 'requestPin' && this.state.phraseWrittenDown) {
-      return this.renderPinRequest();
-    }
-    else if (this.props.status === 'blocked' && this.state.pin !== "") {
-      return <Card><CardItem><Text>
-        Your PIN is blocked for {this.props.blocked} seconds. Please try again later.
-      </Text></CardItem></Card>
     }
     else {
       return this.renderRecoveryInit();
@@ -213,31 +155,6 @@ export default class RecoveryMakeBackup extends Component {
     );
   }
 
-  renderPinRequest() {
-    console.log("Render")
-    console.log(this.props.remainingAttempts);
-
-    return <KeyboardAwareContainer>
-            <PaddedContent>
-              <Text>Please enter your PIN code to confirm your recovery settings.</Text>
-              <PinEntry pinChange={::this.pinChange}
-                        session={{status: this.props.status, remainingAttempts: this.props.remainingAttempts}}
-                        validationForced={this.state.validationForced}
-              />
-            </PaddedContent>
-            <Footer style={{height: 60, paddingTop: 7}}>
-              <View style={[{ width: "90%", margin: 10, flexDirection: 'row'}]}>
-                <View style={{flex: 1, marginRight: 5}}>
-                  <Button title={'Cancel'} onPress={() => this.sendPin(false)} color={'#ff0000'}/>
-                </View>
-                <View style={{flex: 1, marginLeft: 5}}>
-                  <Button title={'OK'} onPress={() => this.sendPin(true)}/>
-                </View>
-              </View>
-            </Footer>
-          </KeyboardAwareContainer>;
-  }
-
   renderPhrase () {
     const {phrase} = this.props;
 
@@ -255,10 +172,10 @@ export default class RecoveryMakeBackup extends Component {
         {phraseRendered}
         <CardItem>
           <Button
-          onPress={::this.phraseWrittenDown}
-          title='Continue'
-          color={"#841584"}
-        /></CardItem>
+            onPress={::this.phraseWrittenDown}
+            title='Continue'
+            color={"#841584"}
+          /></CardItem>
       </Card>
     );
   }

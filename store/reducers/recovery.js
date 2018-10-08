@@ -16,18 +16,19 @@ const initialState = {
 export default function recovery(state = initialState, action) {
   console.log(action.type);
   switch(action.type) {
-    case 'IrmaClient.RecoveryStatus': {
-      if (action.remainingAttempts != null) {
-        return {
-          ...state,
-          status: action.isConfigured ? 'backupConfigured' : state.status,
-          remainingAttempts: action.remainingAttempts,
-          blocked: action.blocked != null ? action.blocked : 0,
-        };
-      }
+    case 'IrmaClient.RecoveryIsConfigured': {
       return {
         ...state,
         status: action.isConfigured ? 'backupConfigured' : state.status,
+      };
+    }
+
+    case 'IrmaClient.RecoveryStatus': {
+      return {
+        ...state,
+        status: action.status,
+        remainingAttempts: action.remainingAttempts != null ? action.remainingAttempts : state.remainingAttempts,
+        blocked: action.blocked != null ? action.blocked : 0,
       };
     }
 
@@ -41,11 +42,18 @@ export default function recovery(state = initialState, action) {
     }
 
     case 'IrmaClient.RecoveryBackup': {
-      console.log("Backup received from go")
+      console.log("Backup received from go");
       return {
         ...state,
         status: 'backupReady',
         backup: action.backup,
+      }
+    }
+
+    case 'IrmaClient.RecoveryDone': {
+      return {
+        ...state,
+        status: 'done',
       }
     }
 

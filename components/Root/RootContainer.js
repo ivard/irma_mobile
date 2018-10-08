@@ -122,16 +122,16 @@ export default class RootContainer extends Component {
         const request = JSON.parse(result);
 
         if (request.type === 'irmabackup') {
-          dispatch({
-            type: 'IrmaBridge.LoadBackup',
-            backupData: request.data,
-          });
-
           navigator.dispatch(
             NavigationActions.navigate({
               routeName: 'RecoveryLoadBackup',
             })
           );
+
+          dispatch({
+            type: 'IrmaBridge.RecoveryLoadBackup',
+            backupData: request.data,
+          });
         }
 
         if (!validateSigrequest(sigRequest)) {

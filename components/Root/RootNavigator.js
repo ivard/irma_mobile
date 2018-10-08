@@ -9,8 +9,8 @@ import PreferencesDashboard from 'components/PreferencesDashboard';
 import QRScanner from 'components/QRScanner';
 import Session from 'components/Session';
 import Sidebar from './children/Sidebar';
-import RecoveryMakeBackup from "components/RecoveryMakeBackup";
-import RecoveryLoadBackup from "components/RecoveryLoadBackup";
+import RecoveryMakeBackup from "components/RecoveryBackup";
+import RecoveryLoadBackup from "components/RecoveryBackup";
 
 const CredentialDashboardNavigator = StackNavigator({
   About: About,
