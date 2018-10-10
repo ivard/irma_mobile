@@ -25,13 +25,6 @@ export default function enrollment(state = initialState, action) {
       };
     }
 
-    case 'IrmaBridge.RecoveryStart': {
-      return {
-          ...state,
-          status: 'recovering',
-      };
-    }
-
     case 'IrmaBridge.Enroll': {
       return {
         ...state,

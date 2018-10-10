@@ -1,16 +1,9 @@
 import React, {Component} from 'react';
-import {
-  CardItem,
-  H3, Button, Icon,
-  Text, View, Footer, Form, Input,
-} from 'native-base';
+import {Button, CardItem, Footer, H2, H3, Icon, Input, Text, View,} from 'native-base';
 import Card from 'lib/UnwrappedCard';
 import PaddedContent from 'lib/PaddedContent';
 import KeyboardAwareContainer from "../../lib/KeyboardAwareContainer";
 import PropTypes from 'prop-types';
-import {connect} from "react-redux";
-import PinEntry from "../Session/children/PinEntry";
-import FormInput from "../../lib/form/FormInput";
 import {Alert} from "react-native";
 
 export default class RecoveryLoadBackup extends Component {
@@ -23,13 +16,40 @@ export default class RecoveryLoadBackup extends Component {
   state = {
     words: [],
     currentWord: '',
+    recoveryStarted: false,
   };
+
+  static getDerivedStateFromProps(props,state) {
+    const {navigation, dispatch} = props;
+    let backup = navigation.getParam("backupData", undefined);
+    if (backup != null && !state.recoveryStarted) {
+      dispatch({
+        type: 'IrmaBridge.RecoveryLoadBackup',
+        backupData: backup,
+      });
+      return {...state, recoveryStarted: true};
+    }
+    return state;
+  }
 
   addWord() {
     const {words, currentWord} = this.state;
-    console.log(currentWord);
+    let word = currentWord.trim().toLowerCase();
+    console.log(word);
+    // TODO: Maybe also check whether typed word is a valid word from the list
+    if (word === '') {
+      Alert.alert(
+        'Enter a word',
+        'Please enter the next word from your recovery phrase.',
+        [
+          {text: 'OK'},
+        ],
+        { cancelable: true }
+      );
+      return;
+    }
     this.setState({
-      words: words.concat(currentWord),
+      words: words.concat(currentWord.trim().toLowerCase()),
       currentWord: '',
     });
   }
@@ -71,13 +91,48 @@ export default class RecoveryLoadBackup extends Component {
         [
           {text: 'OK'},
         ],
-        { cancelable: false }
+        { cancelable: true }
       );
     }
   }
 
   render() {
-    return this.renderRequestPhrase();
+    const {recoveryStarted} = this.state;
+    if(recoveryStarted) {
+      return this.renderRequestPhrase();
+    }
+    else {
+      return this.renderExplanation();
+    }
+  }
+
+  renderExplanation(){
+    return (
+      <PaddedContent>
+        <Card>
+          <CardItem>
+            <H2>Welcome back to IRMA!</H2>
+          </CardItem>
+          <CardItem>
+            <Text>
+              In order to restore your attributes, you need to have your backup file. Open this file with the
+              IRMA app and the recovery process will continue automatically. Please also have your recovery
+              phrase at hand. You will need this during the process.
+            </Text>
+          </CardItem>
+          <CardItem>
+            <H3>Backup file... Do I have that?</H3>
+          </CardItem>
+          <CardItem>
+            <Text>
+            If you don't have a backup file, you can generate one in the old instance of the app via the sidebar menu
+            and then press 'Make backup'. If you don't have the old app anymore, then we have to disappoint you. It is
+            not possible to recover your attributes in this case.
+            </Text>
+          </CardItem>
+        </Card>
+      </PaddedContent>
+    );
   }
 
   renderRequestPhrase() {

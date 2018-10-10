@@ -47,10 +47,10 @@ export default class EnrollmentTeaser extends Component {
     return (
       <View {...footerStyle}>
         <View style={{flexDirection: 'row', justifyContent: 'center'}}>
-          <Button testID="enrollButton" onPress={navigateToEnrollment} style={{marginTop: 5}}>
+          <Button testID="enrollButton" onPress={navigateToEnrollment} style={{marginTop: 5, marginRight: 5}}>
             <Text>{ t('.openAccount') }</Text>
           </Button>
-          <Button testID="recoverButton" onPress={recoverEnrollment} style={{marginTop: 5}}>
+          <Button testID="recoverButton" onPress={recoverEnrollment} style={{marginTop: 5, marginLeft: 5}}>
                       <Text>{ 'Recover' }</Text>
                     </Button>
         </View>
