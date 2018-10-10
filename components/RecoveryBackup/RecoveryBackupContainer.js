@@ -127,6 +127,7 @@ export default class RecoveryBackupContainer extends Component {
         <PinEntry pinChange={::this.pinChange}
                   session={{status: this.props.status, remainingAttempts: this.props.remainingAttempts}}
                   validationForced={this.state.validationForced}
+                  keyboardShouldPersistTaps={true}
         />
       </PaddedContent>
       <Footer style={{height: 60, paddingTop: 7}}>

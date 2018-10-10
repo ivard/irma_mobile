@@ -14,9 +14,10 @@ export default class RecoveryLoadBackup extends Component {
   };
 
   state = {
-    words: [],
-    currentWord: '',
+    words: Array(12).fill(''),
+    wordsError: Array(12).fill(undefined),
     recoveryStarted: false,
+    phraseSent: false,
   };
 
   static getDerivedStateFromProps(props,state) {
@@ -32,41 +33,9 @@ export default class RecoveryLoadBackup extends Component {
     return state;
   }
 
-  addWord() {
-    const {words, currentWord} = this.state;
-    let word = currentWord.trim().toLowerCase();
-    console.log(word);
-    // TODO: Maybe also check whether typed word is a valid word from the list
-    if (word === '') {
-      Alert.alert(
-        'Enter a word',
-        'Please enter the next word from your recovery phrase.',
-        [
-          {text: 'OK'},
-        ],
-        { cancelable: true }
-      );
-      return;
-    }
-    this.setState({
-      words: words.concat(currentWord.trim().toLowerCase()),
-      currentWord: '',
-    });
-  }
-
-  wordChanged(word) {
-    if (this.state.currentWord !== word) {
-      this.setState({
-        currentWord: word,
-      });
-    }
-  }
-
-  deleteWord(index) {
+  wordChanged(index, word) {
     const {words} = this.state;
-    console.log(index);
-
-    words.splice(index, 1);
+    words[index] = word;
     this.setState({
       words: words,
     });
@@ -74,25 +43,34 @@ export default class RecoveryLoadBackup extends Component {
 
   sendPhrase() {
     const {dispatch, changePinRequestReady} = this.props;
-    const {words} = this.state;
+    const {words, wordsError} = this.state;
 
-    if (words.length == 12) {
+    //Check for errors
+    //TODO: maybe add check if entered word is in list of words.
+    let errorFound = false;
+    words.map((word, index) => {
+      if (word === '') {
+        wordsError[index] = 'Required';
+        errorFound = true;
+      }
+      else {
+        wordsError[index] = '';
+      }
+    });
+    this.setState({
+      wordsError: wordsError,
+    });
+
+    if (!errorFound) {
+      this.setState({
+        phraseSent: true
+      });
       dispatch({
         type: 'IrmaBridge.RecoveryLoadPhrase',
         recoveryPhrase: words,
       });
 
       changePinRequestReady(true);
-    }
-    else {
-      Alert.alert(
-        'Not enough words',
-        'A recovery phrase needs 12 words.',
-        [
-          {text: 'OK'},
-        ],
-        { cancelable: true }
-      );
     }
   }
 
@@ -106,7 +84,7 @@ export default class RecoveryLoadBackup extends Component {
     }
   }
 
-  renderExplanation(){
+  static renderExplanation(){
     return (
       <PaddedContent>
         <Card>
@@ -135,25 +113,40 @@ export default class RecoveryLoadBackup extends Component {
     );
   }
 
+  renderWordInputField(index) {
+    const {words, wordsError} = this.state;
+    let error = null;
+    if (wordsError[index]) {
+      error = <Text style={{color: 'red'}}>{wordsError[index]}</Text>;
+    }
+
+    return (
+      <View style={{flex: 1}}>
+        {error}
+        <Input value={words[index]}
+               autoCapitalize='none'
+               onChangeText={(x) => this.wordChanged(index, x)}
+               placeholder={'Word '+(index+1)}
+               keyboardShouldPersistTaps={true}
+        />
+      </View>
+    );
+  }
+
   renderRequestPhrase() {
-    const {words, currentWord} = this.state;
+    const {words, phraseSent} = this.state;
     console.log(words);
 
     console.log("Rendering words");
     const wordsRendered = words.map((word, index) => {
       return (
         <CardItem key={'phrase:' + index} bordered={true}>
-          <View style={{flexDirection: 'row'}}>
-            <Text style={{flex: 5, textAlignVertical: 'center'}}>{word}</Text>
-            <Button style={{flex: 1}} danger square onPress={() => this.deleteWord(index)}>
-              <Icon name='trash' />
-            </Button>
-          </View>
+            {this.renderWordInputField(index)}
         </CardItem>
       );
     });
 
-    console.log(wordsRendered);
+    let disabled = phraseSent ? {disabled: true, color: '#8C8C8C'} : null;
 
     return (
       <KeyboardAwareContainer>
@@ -165,17 +158,11 @@ export default class RecoveryLoadBackup extends Component {
             {wordsRendered}
           </Card>
         </PaddedContent>
-        <Button primary full onPress={::this.sendPhrase}><Text>Continue</Text></Button>
         <Footer>
-          <View style={[{ width: "95%", flexDirection: 'row'}]}>
-            <View style={{flex: 5, marginRight: 5}}>
-              <Input value={currentWord} autoCapitalize='none' onChangeText={::this.wordChanged} placeholder='New word'/>
-            </View>
-            <View style={{flex: 1, padding: 5}}>
-              <Button primary full onPress={::this.addWord}>
-                <Icon name='md-add'/>
-              </Button>
-            </View>
+          <View style={{ width: "100%"}}>
+            <Button primary full onPress={::this.sendPhrase} {...disabled}>
+              <Text>Continue{phraseSent ? '...' : null}</Text>
+            </Button>
           </View>
         </Footer>
       </KeyboardAwareContainer>
