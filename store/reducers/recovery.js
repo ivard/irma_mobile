@@ -3,10 +3,12 @@ import _ from 'lodash';
 const initialState = {
   phrase: null,
 
-  status: "",
+  status: '',
   error: null,
   remainingAttempts: -1,
   blocked: 0,
+
+  errorMessage: '',
 
   backup: null,
 
@@ -30,6 +32,13 @@ export default function recovery(state = initialState, action) {
         remainingAttempts: action.remainingAttempts != null ? action.remainingAttempts : state.remainingAttempts,
         blocked: action.blocked != null ? action.blocked : 0,
       };
+    }
+
+    case 'IrmaClient.RecoveryError': {
+      return {
+        ...state,
+        errorMessage: action.errorMessage,
+      }
     }
 
     case 'IrmaClient.RecoveryShowPhrase': {

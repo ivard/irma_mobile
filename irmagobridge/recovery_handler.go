@@ -12,6 +12,7 @@ type RecoveryLoadBackupAction struct {
 
 type RecoveryLoadPhraseAction struct {
 	RecoveryPhrase []string
+	Proceed        bool
 }
 
 type RecoveryPinAction struct {
@@ -35,7 +36,10 @@ func New() *RecoveryHandler {
 
 func (rh *RecoveryHandler) RecoveryCancelled() {
 	log.Println("Recovery cancelled")
-	// TODO communicate to user
+	sendAction(&OutgoingAction{
+		"type":   "IrmaClient.RecoveryStatus",
+		"status": "cancelled",
+	})
 }
 
 func (rh *RecoveryHandler) RequestPin(remainingAttempts int, callback irmaclient.PinHandler) {
@@ -47,13 +51,21 @@ func (rh *RecoveryHandler) RequestPin(remainingAttempts int, callback irmaclient
 	})
 
 	p := <-rh.pin
-	callback(p != nil, *p)
+	if p == nil {
+		callback(false, "")
+	} else {
+		callback(true, *p)
+	}
 }
 
 func (rh *RecoveryHandler) RequestPhrase(callback irmaclient.PhraseHandler) {
 	log.Println("Recovery phrase requested")
 	phrase := <-rh.recoveryPhrase
-	callback(true, phrase)
+	if phrase == nil {
+		callback(false, nil)
+	} else {
+		callback(true, phrase)
+	}
 }
 
 func (rh *RecoveryHandler) ShowPhrase(phrase []string) {
@@ -106,4 +118,9 @@ func (rh *RecoveryHandler) RecoveryBlocked(duration int) {
 func (rh *RecoveryHandler) RecoveryError(err error) {
 	log.Println("Error in recovery")
 	log.Println(err)
+	sendAction(&OutgoingAction{
+		"type":         "IrmaClient.RecoveryError",
+		"status":       "error",
+		"errorMessage": err.Error(),
+	})
 }

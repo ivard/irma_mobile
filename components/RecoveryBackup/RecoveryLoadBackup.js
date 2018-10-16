@@ -1,10 +1,9 @@
 import React, {Component} from 'react';
-import {Button, CardItem, Footer, H2, H3, Icon, Input, Text, View,} from 'native-base';
+import {Button, CardItem, Footer, H2, H3, Input, Text, View,} from 'native-base';
 import Card from 'lib/UnwrappedCard';
 import PaddedContent from 'lib/PaddedContent';
 import KeyboardAwareContainer from "../../lib/KeyboardAwareContainer";
 import PropTypes from 'prop-types';
-import {Alert} from "react-native";
 
 export default class RecoveryLoadBackup extends Component {
 
@@ -35,7 +34,7 @@ export default class RecoveryLoadBackup extends Component {
 
   wordChanged(index, word) {
     const {words} = this.state;
-    words[index] = word;
+    words[index] = word.trim().toLowerCase();
     this.setState({
       words: words,
     });
@@ -68,6 +67,7 @@ export default class RecoveryLoadBackup extends Component {
       dispatch({
         type: 'IrmaBridge.RecoveryLoadPhrase',
         recoveryPhrase: words,
+        proceed: true,
       });
 
       changePinRequestReady(true);
@@ -75,6 +75,7 @@ export default class RecoveryLoadBackup extends Component {
   }
 
   render() {
+    console.log(this.state.errorCounter, this.state.errorsDismissed);
     const {recoveryStarted} = this.state;
     if(recoveryStarted) {
       return this.renderRequestPhrase();
@@ -84,7 +85,7 @@ export default class RecoveryLoadBackup extends Component {
     }
   }
 
-  static renderExplanation(){
+  renderExplanation(){
     return (
       <PaddedContent>
         <Card>
@@ -123,8 +124,7 @@ export default class RecoveryLoadBackup extends Component {
     return (
       <View style={{flex: 1}}>
         {error}
-        <Input value={words[index]}
-               autoCapitalize='none'
+        <Input autoCapitalize='none'
                onChangeText={(x) => this.wordChanged(index, x)}
                placeholder={'Word '+(index+1)}
                keyboardShouldPersistTaps={true}

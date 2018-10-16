@@ -1,11 +1,6 @@
 import React, {Component} from 'react';
-import {
-  Container,
-  CardItem,
-  H3,
-  Text, View, Footer,
-} from 'native-base';
-import {Button, Alert, Platform, BackHandler} from 'react-native'
+import {CardItem, Footer, Text, View,} from 'native-base';
+import {Alert, Button} from 'react-native'
 import Card from 'lib/UnwrappedCard';
 import PaddedContent from 'lib/PaddedContent';
 import PropTypes from 'prop-types';
@@ -14,7 +9,6 @@ import PinEntry from "../Session/children/PinEntry";
 import KeyboardAwareContainer from "../../lib/KeyboardAwareContainer";
 import RecoveryMakeBackup from "./RecoveryMakeBackup";
 import RecoveryLoadBackup from "./RecoveryLoadBackup";
-import {sendBackupMail} from "lib/mail";
 import ReactTimeout from "react-timeout";
 import {resetNavigation} from "../../lib/navigation";
 
@@ -27,6 +21,7 @@ const mapStateToProps = (state) => {
       blocked,
       backup,
       isConfigured,
+      errorMessage,
     }
   } = state;
 
@@ -37,6 +32,7 @@ const mapStateToProps = (state) => {
     blocked,
     backup,
     isConfigured,
+    errorMessage,
   };
 };
 
@@ -50,12 +46,15 @@ export default class RecoveryBackupContainer extends Component {
     status: PropTypes.string.isRequired,
     remainingAttempts: PropTypes.number.isRequired,
     blocked: PropTypes.number.isRequired,
+    errorMessage: PropTypes.string.isRequired,
   };
 
   state = {
     pin: "",
     pinRequestReady: false,
     validationForced: false,
+    prevErrorMessage: '',
+    pinSent: false,
   };
 
   changePinRequestReady(ready) {
@@ -67,27 +66,22 @@ export default class RecoveryBackupContainer extends Component {
 
   sendPin(proceed){
     const { pin } = this.state;
-    if (!pin) {
+    if (proceed && !pin) {
       this.setState({
         validationForced: true,
         pinRequestReady: false,
       });
     }
     else {
+      this.setState({
+        pinSent: true,
+      });
       this.props.dispatch({
         type: 'IrmaBridge.RecoveryInitPin',
         pin: pin,
         proceed: proceed,
       });
     }
-    if (!proceed) {
-      this.navigateBack();
-    }
-  }
-
-  navigateBack() {
-    const { navigation } = this.props;
-    navigation.goBack();
   }
 
   pinChange(pin) {
@@ -97,11 +91,24 @@ export default class RecoveryBackupContainer extends Component {
     });
   }
 
+  dismissErrorMessage() {
+    const { navigation, errorMessage } = this.props;
+
+    this.setState({
+      prevErrorMessage: errorMessage,
+    });
+
+    resetNavigation(navigation.dispatch, 'CredentialDashboard');
+  }
+
   render() {
-    const {status, blocked, navigation} = this.props;
+    const {status, blocked, navigation, errorMessage} = this.props;
 
     console.log("RecoveryBackupContainer", status);
-    if (status === 'requestPin' && this.state.pinRequestReady) {
+    if(errorMessage !== this.state.prevErrorMessage) {
+      return this.renderErrorMessage();
+    }
+    else if (status === 'requestPin' && this.state.pinRequestReady) {
       return this.renderPinRequest();
     }
     else if (status === 'blocked' && this.state.pin !== "") {
@@ -117,9 +124,33 @@ export default class RecoveryBackupContainer extends Component {
     }
   }
 
+  renderErrorMessage() {
+    const {errorMessage} = this.props;
+    Alert.alert(
+      'Error',
+      errorMessage,
+      [
+        {text: 'OK', onPress: ::this.dismissErrorMessage},
+      ],
+      { cancelable: false }
+    );
+    return null;
+  }
+
   renderPinRequest() {
     console.log("Render")
     console.log(this.props.remainingAttempts);
+
+    const confirmButtons = (
+      <View style={[{ width: "90%", margin: 10, flexDirection: 'row'}]}>
+        <View style={{flex: 1, marginRight: 5}}>
+          <Button title={'Cancel'} onPress={() => this.sendPin(false)} color={'#ff0000'}/>
+        </View>
+        <View style={{flex: 1, marginLeft: 5}}>
+          <Button title={'OK'} onPress={() => this.sendPin(true)}/>
+        </View>
+      </View>
+    );
 
     return <KeyboardAwareContainer>
       <PaddedContent>
@@ -131,22 +162,20 @@ export default class RecoveryBackupContainer extends Component {
         />
       </PaddedContent>
       <Footer style={{height: 60, paddingTop: 7}}>
-        <View style={[{ width: "90%", margin: 10, flexDirection: 'row'}]}>
-          <View style={{flex: 1, marginRight: 5}}>
-            <Button title={'Cancel'} onPress={() => this.sendPin(false)} color={'#ff0000'}/>
-          </View>
-          <View style={{flex: 1, marginLeft: 5}}>
-            <Button title={'OK'} onPress={() => this.sendPin(true)}/>
-          </View>
-        </View>
+        {this.state.pinSent ? null : confirmButtons}
       </Footer>
     </KeyboardAwareContainer>;
   }
 
   componentDidUpdate(prevProps) {
-    const { navigation, status} = this.props;
-    if (status !== prevProps.status && status === 'done') {
+    const { navigation, status, remainingAttempts} = this.props;
+    if (status !== prevProps.status && (status === 'done' || status === 'cancelled')) {
       resetNavigation(navigation.dispatch, 'CredentialDashboard');
+    }
+    if (remainingAttempts !== prevProps.remainingAttempts) {
+      this.setState({
+        pinSent: false,
+      });
     }
   }
 }

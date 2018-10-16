@@ -119,6 +119,10 @@ func recoveredReceiveAction(actionJSONString string) {
 		log.Println(actionJSON)
 		if err = json.Unmarshal(actionJSON, &action); err == nil {
 			log.Println("Channel hit")
+			if !action.Proceed {
+				recoveryHandler.recoveryPhrase <- nil
+				return
+			}
 			recoveryHandler.recoveryPhrase <- action.RecoveryPhrase
 		}
 
