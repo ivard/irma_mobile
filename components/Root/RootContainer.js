@@ -125,9 +125,12 @@ export default class RootContainer extends Component {
           navigator.dispatch(
             NavigationActions.navigate({
               routeName: 'RecoveryLoadBackup',
-              params: {backupData: request.data}
             })
           );
+          dispatch({
+            type: 'IrmaBridge.RecoveryLoadBackup',
+            backupData: request.data,
+          });
           return;
         }
 

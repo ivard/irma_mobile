@@ -18,6 +18,10 @@ const initialState = {
 export default function recovery(state = initialState, action) {
   console.log(action.type);
   switch(action.type) {
+    case 'IrmaClient.RecoveryReset': {
+      return initialState;
+    }
+
     case 'IrmaClient.RecoveryIsConfigured': {
       return {
         ...state,

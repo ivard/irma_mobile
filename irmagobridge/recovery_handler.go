@@ -26,12 +26,9 @@ type RecoveryHandler struct {
 	recoveryPhrase chan []string
 }
 
-func New() *RecoveryHandler {
-	return &RecoveryHandler{
-		pin:            make(chan *string, 1),
-		recoveryPhrase: make(chan []string, 1),
-		backup:         nil,
-	}
+func (rh *RecoveryHandler) Init() {
+	rh.pin = make(chan *string, 1)
+	rh.recoveryPhrase = make(chan []string, 1)
 }
 
 func (rh *RecoveryHandler) RecoveryCancelled() {
@@ -50,21 +47,25 @@ func (rh *RecoveryHandler) RequestPin(remainingAttempts int, callback irmaclient
 		"remainingAttempts": remainingAttempts,
 	})
 
-	p := <-rh.pin
+	p, ok := <-rh.pin
 	if p == nil {
-		callback(false, "")
+		callback(ok, "")
 	} else {
-		callback(true, *p)
+		callback(ok, *p)
 	}
 }
 
 func (rh *RecoveryHandler) RequestPhrase(callback irmaclient.PhraseHandler) {
 	log.Println("Recovery phrase requested")
-	phrase := <-rh.recoveryPhrase
+	sendAction(&OutgoingAction{
+		"type":   "IrmaClient.RecoveryStatus",
+		"status": "requestPhrase",
+	})
+	phrase, ok := <-rh.recoveryPhrase
 	if phrase == nil {
-		callback(false, nil)
+		callback(ok, nil)
 	} else {
-		callback(true, phrase)
+		callback(ok, phrase)
 	}
 }
 
@@ -82,20 +83,23 @@ func (rh *RecoveryHandler) OutputBackup(backup []byte) {
 }
 
 func (rh *RecoveryHandler) GetBackup(callback irmaclient.BackupHandler) {
-	// Backup is set at initalization, so no channel is needed for now
+	// Backup is set at initialization, so no channel is needed for now
 	callback(true, rh.backup)
 }
 
 func (rh *RecoveryHandler) RecoveryPinOk() {
+	// No intermediate result sent for now
 }
 
 func (rh *RecoveryHandler) RecoveryInitSuccess() {
 	log.Println("Recovery init successful")
+	rh.Close()
 	sendRecoveryIsConfigured()
 }
 
 func (rh *RecoveryHandler) RecoveryPerformed(newClient *irmaclient.Client) {
 	log.Println("Recovery was successful")
+	rh.Close()
 	if newClient != nil {
 		client = newClient
 		sendCredentials()
@@ -118,9 +122,15 @@ func (rh *RecoveryHandler) RecoveryBlocked(duration int) {
 func (rh *RecoveryHandler) RecoveryError(err error) {
 	log.Println("Error in recovery")
 	log.Println(err)
+	rh.Close()
 	sendAction(&OutgoingAction{
 		"type":         "IrmaClient.RecoveryError",
 		"status":       "error",
 		"errorMessage": err.Error(),
 	})
+}
+
+func (rh *RecoveryHandler) Close() {
+	close(rh.recoveryPhrase)
+	close(rh.pin)
 }

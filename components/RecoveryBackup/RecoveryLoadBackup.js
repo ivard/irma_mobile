@@ -15,22 +15,8 @@ export default class RecoveryLoadBackup extends Component {
   state = {
     words: Array(12).fill(''),
     wordsError: Array(12).fill(undefined),
-    recoveryStarted: false,
     phraseSent: false,
   };
-
-  static getDerivedStateFromProps(props,state) {
-    const {navigation, dispatch} = props;
-    let backup = navigation.getParam("backupData", undefined);
-    if (backup != null && !state.recoveryStarted) {
-      dispatch({
-        type: 'IrmaBridge.RecoveryLoadBackup',
-        backupData: backup,
-      });
-      return {...state, recoveryStarted: true};
-    }
-    return state;
-  }
 
   wordChanged(index, word) {
     const {words} = this.state;
@@ -75,9 +61,8 @@ export default class RecoveryLoadBackup extends Component {
   }
 
   render() {
-    console.log(this.state.errorCounter, this.state.errorsDismissed);
-    const {recoveryStarted} = this.state;
-    if(recoveryStarted) {
+    const {status} = this.props;
+    if(status === 'requestPhrase') {
       return this.renderRequestPhrase();
     }
     else {
@@ -115,7 +100,7 @@ export default class RecoveryLoadBackup extends Component {
   }
 
   renderWordInputField(index) {
-    const {words, wordsError} = this.state;
+    const {wordsError} = this.state;
     let error = null;
     if (wordsError[index]) {
       error = <Text style={{color: 'red'}}>{wordsError[index]}</Text>;

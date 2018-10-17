@@ -86,6 +86,11 @@ func recoveredReceiveAction(actionJSONString string) {
 			err = actionHandler.SetCrashReportingPreference(action)
 		}
 
+	case "RecoveryReset":
+		sendAction(&OutgoingAction{
+			"type": "IrmaClient.RecoveryReset",
+		})
+
 	case "RecoveryLoadBackup":
 		log.Println("RecoveryLoadBackup")
 		action := RecoveryLoadBackupAction{}
@@ -95,11 +100,13 @@ func recoveredReceiveAction(actionJSONString string) {
 			backupBytes, _ := base64.StdEncoding.DecodeString(action.BackupData)
 			log.Println("backup decoded")
 			recoveryHandler.backup = backupBytes
+			recoveryHandler.Init()
 			go client.StartRecovery(recoveryHandler)
 		}
 
 	case "RecoveryInit":
 		log.Println("Initializing recovery")
+		recoveryHandler.Init()
 		go client.InitRecovery(recoveryHandler)
 
 	case "RecoveryInitPin":
@@ -108,7 +115,7 @@ func recoveredReceiveAction(actionJSONString string) {
 			log.Println(action)
 			log.Println(action.Proceed)
 			if !action.Proceed {
-				recoveryHandler.pin <- nil
+				recoveryHandler.Close()
 				return
 			}
 			recoveryHandler.pin <- &action.Pin
@@ -120,7 +127,7 @@ func recoveredReceiveAction(actionJSONString string) {
 		if err = json.Unmarshal(actionJSON, &action); err == nil {
 			log.Println("Channel hit")
 			if !action.Proceed {
-				recoveryHandler.recoveryPhrase <- nil
+				recoveryHandler.Close()
 				return
 			}
 			recoveryHandler.recoveryPhrase <- action.RecoveryPhrase

@@ -53,9 +53,23 @@ export default class RecoveryBackupContainer extends Component {
     pin: "",
     pinRequestReady: false,
     validationForced: false,
-    prevErrorMessage: '',
     pinSent: false,
+    errorDismissed: false,
   };
+
+  static getDerivedStateFromProps(props, state) {
+    if (props.status === '') {
+      // Reset state to initial state after RecoveryReset
+      return {
+        pin: "",
+        pinRequestReady: false,
+        validationForced: false,
+        pinSent: false,
+        errorDismissed: false,
+      };
+    }
+    return state;
+  }
 
   changePinRequestReady(ready) {
     console.log("Change PIN request ready");
@@ -91,22 +105,47 @@ export default class RecoveryBackupContainer extends Component {
     });
   }
 
-  dismissErrorMessage() {
-    const { navigation, errorMessage } = this.props;
+  dismissAlert() {
+    const { navigation, dispatch } = this.props;
 
     this.setState({
-      prevErrorMessage: errorMessage,
+      errorDismissed: true,
     });
 
     resetNavigation(navigation.dispatch, 'CredentialDashboard');
+
+    dispatch({
+      type: 'IrmaBridge.RecoveryReset',
+    });
   }
 
   render() {
+    console.log("Render")
+    console.log(this.props);
+    console.log(this.state);
     const {status, blocked, navigation, errorMessage} = this.props;
 
     console.log("RecoveryBackupContainer", status);
-    if(errorMessage !== this.state.prevErrorMessage) {
+    if(errorMessage !== '' && !this.state.errorDismissed) {
       return this.renderErrorMessage();
+    }
+    if(status === 'done') {
+      Alert.alert(
+        'Success',
+        'Your backup was recovered sucessfully.',
+        [{text: 'OK', onPress: ::this.dismissAlert}],
+        { cancelable: false },
+      );
+      return null;
+    }
+    else if (status === 'cancelled') {
+      Alert.alert(
+        'Cancelled',
+        'The recovery process was cancelled.',
+        [{text: 'OK', onPress: ::this.dismissAlert}],
+        { cancelable: false },
+      );
+      return null;
     }
     else if (status === 'requestPin' && this.state.pinRequestReady) {
       return this.renderPinRequest();
@@ -130,7 +169,7 @@ export default class RecoveryBackupContainer extends Component {
       'Error',
       errorMessage,
       [
-        {text: 'OK', onPress: ::this.dismissErrorMessage},
+        {text: 'OK', onPress: ::this.dismissAlert},
       ],
       { cancelable: false }
     );
