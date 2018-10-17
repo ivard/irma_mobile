@@ -120,9 +120,6 @@ export default class RecoveryLoadBackup extends Component {
 
   renderRequestPhrase() {
     const {words, phraseSent} = this.state;
-    console.log(words);
-
-    console.log("Rendering words");
     const wordsRendered = words.map((word, index) => {
       return (
         <CardItem key={'phrase:' + index} bordered={true}>
