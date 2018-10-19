@@ -4,10 +4,10 @@ const initialState = {
   phrase: null,
 
   status: '',
-  error: null,
   remainingAttempts: -1,
   blocked: 0,
 
+  errorStatus: '',
   errorMessage: '',
 
   backup: null,
@@ -17,6 +17,12 @@ const initialState = {
 
 export default function recovery(state = initialState, action) {
   console.log(action.type);
+  state = {
+    // Reset previous error value
+    ...state,
+    errorStatus: '',
+    errorMessage: '',
+  };
   switch(action.type) {
     case 'IrmaClient.RecoveryReset': {
       return initialState;
@@ -41,6 +47,7 @@ export default function recovery(state = initialState, action) {
     case 'IrmaClient.RecoveryError': {
       return {
         ...state,
+        errorStatus: action.errorStatus,
         errorMessage: action.errorMessage,
       }
     }

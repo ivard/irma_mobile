@@ -10,6 +10,7 @@ export default class RecoveryLoadBackup extends Component {
   static propTypes = {
     dispatch: PropTypes.func.isRequired,
     changePinRequestReady: PropTypes.func.isRequired,
+    errorPresent: PropTypes.func.isRequired,
   };
 
   state = {
@@ -17,6 +18,13 @@ export default class RecoveryLoadBackup extends Component {
     wordsError: Array(12).fill(undefined),
     phraseSent: false,
   };
+
+  static getDerivedStateFromProps(props, state) {
+    if (props.errorPresent() && props.status === 'requestPhrase') {
+      return {...state, phraseSent: false};
+    }
+    return state;
+  }
 
   wordChanged(index, word) {
     const {words} = this.state;
@@ -48,7 +56,7 @@ export default class RecoveryLoadBackup extends Component {
 
     if (!errorFound) {
       this.setState({
-        phraseSent: true
+        phraseSent: true,
       });
       dispatch({
         type: 'IrmaBridge.RecoveryLoadPhrase',
@@ -119,6 +127,7 @@ export default class RecoveryLoadBackup extends Component {
   }
 
   renderRequestPhrase() {
+    const {errorPresent} = this.props;
     const {words, phraseSent} = this.state;
     const wordsRendered = words.map((word, index) => {
       return (
@@ -143,7 +152,7 @@ export default class RecoveryLoadBackup extends Component {
         <Footer>
           <View style={{ width: "100%"}}>
             <Button primary full onPress={::this.sendPhrase} {...disabled}>
-              <Text>Continue{phraseSent ? '...' : null}</Text>
+              <Text>Continue{phraseSent && !errorPresent() ? '...' : null}</Text>
             </Button>
           </View>
         </Footer>

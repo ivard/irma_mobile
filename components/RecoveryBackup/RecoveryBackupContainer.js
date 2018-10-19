@@ -21,6 +21,7 @@ const mapStateToProps = (state) => {
       blocked,
       backup,
       isConfigured,
+      errorStatus,
       errorMessage,
     }
   } = state;
@@ -32,6 +33,7 @@ const mapStateToProps = (state) => {
     blocked,
     backup,
     isConfigured,
+    errorStatus,
     errorMessage,
   };
 };
@@ -46,11 +48,12 @@ export default class RecoveryBackupContainer extends Component {
     status: PropTypes.string.isRequired,
     remainingAttempts: PropTypes.number.isRequired,
     blocked: PropTypes.number.isRequired,
+    errorStatus: PropTypes.string.isRequired,
     errorMessage: PropTypes.string.isRequired,
   };
 
   state = {
-    pin: "",
+    pin: '',
     pinRequestReady: false,
     validationForced: false,
     pinSent: false,
@@ -61,7 +64,7 @@ export default class RecoveryBackupContainer extends Component {
     if (props.status === '') {
       // Reset state to initial state after RecoveryReset
       return {
-        pin: "",
+        pin: '',
         pinRequestReady: false,
         validationForced: false,
         pinSent: false,
@@ -105,31 +108,41 @@ export default class RecoveryBackupContainer extends Component {
     });
   }
 
-  dismissAlert() {
-    const { navigation, dispatch } = this.props;
+  dismissAlert(fatal) {
+    const { navigation, dispatch, status } = this.props;
 
     this.setState({
+      pinRequestReady: false,
       errorDismissed: true,
     });
 
-    resetNavigation(navigation.dispatch, 'CredentialDashboard');
+    if (fatal || ['done', 'cancelled'].includes(status)) {
+      resetNavigation(navigation.dispatch, 'CredentialDashboard');
 
-    dispatch({
-      type: 'IrmaBridge.RecoveryReset',
-    });
+      dispatch({
+        type: 'IrmaBridge.RecoveryReset',
+      });
+    }
+  }
+
+  errorPresent() {
+    return !this.state.errorDismissed;
   }
 
   render() {
     console.log("Render")
     console.log(this.props);
     console.log(this.state);
-    const {status, blocked, navigation, errorMessage} = this.props;
+    const {status, blocked, errorStatus, navigation} = this.props;
 
     console.log("RecoveryBackupContainer", status);
-    if(errorMessage !== '' && !this.state.errorDismissed) {
-      return this.renderErrorMessage();
+    if(!this.state.errorDismissed && errorStatus !== '') {
+      this.renderErrorMessage();
+      if (errorStatus === 'error') {
+        return null;
+      }
     }
-    if(status === 'done') {
+    if (status === 'done') {
       Alert.alert(
         'Success',
         'Your backup was recovered sucessfully.',
@@ -156,7 +169,7 @@ export default class RecoveryBackupContainer extends Component {
       </Text></CardItem></Card>
     }
     else if (navigation.state.routeName === 'RecoveryLoadBackup'){
-      return <RecoveryLoadBackup {...this.props} changePinRequestReady={::this.changePinRequestReady}/>;
+      return <RecoveryLoadBackup {...this.props} changePinRequestReady={::this.changePinRequestReady} errorPresent={::this.errorPresent}/>;
     }
     else {
       return <RecoveryMakeBackup {...this.props} changePinRequestReady={::this.changePinRequestReady}/>;
@@ -164,16 +177,17 @@ export default class RecoveryBackupContainer extends Component {
   }
 
   renderErrorMessage() {
-    const {errorMessage} = this.props;
+    const {errorStatus, errorMessage} = this.props;
+    console.log("Show error");
+    let fatal = errorStatus === 'error';
     Alert.alert(
       'Error',
       errorMessage,
       [
-        {text: 'OK', onPress: ::this.dismissAlert},
+        {text: 'OK', onPress: () => {::this.dismissAlert(fatal)}},
       ],
       { cancelable: false }
     );
-    return null;
   }
 
   renderPinRequest() {

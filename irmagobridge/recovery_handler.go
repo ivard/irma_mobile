@@ -125,7 +125,16 @@ func (rh *RecoveryHandler) RecoveryError(err error) {
 	rh.Close()
 	sendAction(&OutgoingAction{
 		"type":         "IrmaClient.RecoveryError",
-		"status":       "error",
+		"errorStatus":  "error",
+		"errorMessage": err.Error(),
+	})
+}
+
+func (rh *RecoveryHandler) RecoveryPhraseIncorrect(err error) {
+	log.Println("Phrase was incorrect:", err.Error())
+	sendAction(&OutgoingAction{
+		"type":         "IrmaClient.RecoveryError",
+		"errorStatus":  "warning",
 		"errorMessage": err.Error(),
 	})
 }
