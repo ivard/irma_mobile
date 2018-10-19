@@ -57,7 +57,7 @@ export default class RecoveryBackupContainer extends Component {
     pinRequestReady: false,
     validationForced: false,
     pinSent: false,
-    errorDismissed: false,
+    errorPresent: false,
   };
 
   static getDerivedStateFromProps(props, state) {
@@ -68,7 +68,7 @@ export default class RecoveryBackupContainer extends Component {
         pinRequestReady: false,
         validationForced: false,
         pinSent: false,
-        errorDismissed: false,
+        errorPresent: false,
       };
     }
     return state;
@@ -113,7 +113,7 @@ export default class RecoveryBackupContainer extends Component {
 
     this.setState({
       pinRequestReady: false,
-      errorDismissed: true,
+      errorPresent: false,
     });
 
     if (fatal || ['done', 'cancelled'].includes(status)) {
@@ -126,7 +126,7 @@ export default class RecoveryBackupContainer extends Component {
   }
 
   errorPresent() {
-    return !this.state.errorDismissed;
+    return this.state.errorPresent;
   }
 
   render() {
@@ -136,11 +136,8 @@ export default class RecoveryBackupContainer extends Component {
     const {status, blocked, errorStatus, navigation} = this.props;
 
     console.log("RecoveryBackupContainer", status);
-    if(!this.state.errorDismissed && errorStatus !== '') {
-      this.renderErrorMessage();
-      if (errorStatus === 'error') {
-        return null;
-      }
+    if (errorStatus === 'error') {
+      return null;
     }
     if (status === 'done') {
       Alert.alert(
@@ -180,6 +177,9 @@ export default class RecoveryBackupContainer extends Component {
     const {errorStatus, errorMessage} = this.props;
     console.log("Show error");
     let fatal = errorStatus === 'error';
+    this.setState({
+      errorPresent: true,
+    });
     Alert.alert(
       'Error',
       errorMessage,
@@ -221,7 +221,10 @@ export default class RecoveryBackupContainer extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const { navigation, status, remainingAttempts} = this.props;
+    const { navigation, status, remainingAttempts, errorStatus} = this.props;
+    if(!this.state.errorPresent && errorStatus !== '') {
+      this.renderErrorMessage();
+    }
     if (status !== prevProps.status && (status === 'done' || status === 'cancelled')) {
       resetNavigation(navigation.dispatch, 'CredentialDashboard');
     }
