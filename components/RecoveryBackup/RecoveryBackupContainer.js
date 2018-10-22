@@ -75,7 +75,6 @@ export default class RecoveryBackupContainer extends Component {
   }
 
   changePinRequestReady(ready) {
-    console.log("Change PIN request ready");
     this.setState({
       pinRequestReady: ready,
     });
@@ -102,7 +101,6 @@ export default class RecoveryBackupContainer extends Component {
   }
 
   pinChange(pin) {
-    console.log("PIN change", pin);
     this.setState({
       pin,
     });
@@ -110,11 +108,6 @@ export default class RecoveryBackupContainer extends Component {
 
   dismissAlert(fatal) {
     const { navigation, dispatch, status } = this.props;
-
-    this.setState({
-      pinRequestReady: false,
-      errorPresent: false,
-    });
 
     if (fatal || ['done', 'cancelled'].includes(status)) {
       resetNavigation(navigation.dispatch, 'CredentialDashboard');
@@ -125,36 +118,12 @@ export default class RecoveryBackupContainer extends Component {
     }
   }
 
-  errorPresent() {
-    return this.state.errorPresent;
-  }
-
   render() {
-    console.log("Render")
-    console.log(this.props);
-    console.log(this.state);
     const {status, blocked, errorStatus, navigation} = this.props;
 
     console.log("RecoveryBackupContainer", status);
-    if (errorStatus === 'error') {
-      return null;
-    }
-    if (status === 'done') {
-      Alert.alert(
-        'Success',
-        'Your backup was recovered sucessfully.',
-        [{text: 'OK', onPress: ::this.dismissAlert}],
-        { cancelable: false },
-      );
-      return null;
-    }
-    else if (status === 'cancelled') {
-      Alert.alert(
-        'Cancelled',
-        'The recovery process was cancelled.',
-        [{text: 'OK', onPress: ::this.dismissAlert}],
-        { cancelable: false },
-      );
+    if (['done', 'cancelled'].includes(status) || errorStatus === 'error') {
+      // Alert is spawn in componentDidUpdate
       return null;
     }
     else if (status === 'requestPin' && this.state.pinRequestReady) {
@@ -166,34 +135,14 @@ export default class RecoveryBackupContainer extends Component {
       </Text></CardItem></Card>
     }
     else if (navigation.state.routeName === 'RecoveryLoadBackup'){
-      return <RecoveryLoadBackup {...this.props} changePinRequestReady={::this.changePinRequestReady} errorPresent={::this.errorPresent}/>;
+      return <RecoveryLoadBackup {...this.props} changePinRequestReady={::this.changePinRequestReady}/>;
     }
     else {
       return <RecoveryMakeBackup {...this.props} changePinRequestReady={::this.changePinRequestReady}/>;
     }
   }
 
-  renderErrorMessage() {
-    const {errorStatus, errorMessage} = this.props;
-    console.log("Show error");
-    let fatal = errorStatus === 'error';
-    this.setState({
-      errorPresent: true,
-    });
-    Alert.alert(
-      'Error',
-      errorMessage,
-      [
-        {text: 'OK', onPress: () => {::this.dismissAlert(fatal)}},
-      ],
-      { cancelable: false }
-    );
-  }
-
   renderPinRequest() {
-    console.log("Render")
-    console.log(this.props.remainingAttempts);
-
     const confirmButtons = (
       <View style={[{ width: "90%", margin: 10, flexDirection: 'row'}]}>
         <View style={{flex: 1, marginRight: 5}}>
@@ -220,13 +169,57 @@ export default class RecoveryBackupContainer extends Component {
     </KeyboardAwareContainer>;
   }
 
+  spawnErrorMessage() {
+    const {errorStatus, errorMessage} = this.props;
+    let fatal = errorStatus === 'error';
+    Alert.alert(
+      'Error',
+      errorMessage,
+      [
+        {text: 'OK', onPress: () => {::this.dismissAlert(fatal)}},
+      ],
+      { cancelable: false }
+    );
+  }
+
+  spawnDoneMessage() {
+    Alert.alert(
+      'Success',
+      'Your backup was recovered sucessfully.',
+      [{text: 'OK', onPress: ::this.dismissAlert}],
+      { cancelable: false },
+    );
+  }
+
+  spawnCancelledMessage() {
+    Alert.alert(
+      'Cancelled',
+      'The recovery process was cancelled.',
+      [{text: 'OK', onPress: ::this.dismissAlert}],
+      { cancelable: false },
+    );
+  }
+
   componentDidUpdate(prevProps) {
-    const { navigation, status, remainingAttempts, errorStatus} = this.props;
-    if(!this.state.errorPresent && errorStatus !== '') {
-      this.renderErrorMessage();
+    const { status, remainingAttempts, errorStatus, errorMessage} = this.props;
+    if(errorStatus !== '' && prevProps.errorMessage !== errorMessage && !this.state.errorPresent) {
+      this.spawnErrorMessage();
+      this.setState({
+        errorPresent: true,
+      });
     }
-    if (status !== prevProps.status && (status === 'done' || status === 'cancelled')) {
-      resetNavigation(navigation.dispatch, 'CredentialDashboard');
+    else if (this.state.errorPresent && errorStatus === ''){
+      this.setState({
+        errorPresent: false,
+      });
+    }
+    if(prevProps.status !== status) {
+      if (status === 'done') {
+        this.spawnDoneMessage();
+      }
+      else if (status === 'cancelled') {
+        this.spawnCancelledMessage();
+      }
     }
     if (remainingAttempts !== prevProps.remainingAttempts) {
       this.setState({
