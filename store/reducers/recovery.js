@@ -31,7 +31,7 @@ export default function recovery(state = initialState, action) {
     case 'IrmaClient.RecoveryIsConfigured': {
       return {
         ...state,
-        status: action.isConfigured ? 'backupConfigured' : state.status,
+        status: action.isConfigured ? 'backupConfigured' : '',
       };
     }
 
