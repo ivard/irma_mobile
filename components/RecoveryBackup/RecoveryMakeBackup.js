@@ -3,7 +3,7 @@ import {
   Container,
   CardItem,
   H3,
-  Text, View, Footer,
+  Text, View, Footer, Form,
 } from 'native-base';
 import {Button, Alert, Platform, BackHandler} from 'react-native'
 import Card from 'lib/UnwrappedCard';
@@ -13,6 +13,7 @@ import {connect} from "react-redux";
 import PinEntry from "../Session/children/PinEntry";
 import KeyboardAwareContainer from "../../lib/KeyboardAwareContainer";
 import {sendBackupMail} from "lib/mail";
+import FormInput from "../../lib/form/FormInput";
 
 export default class RecoveryMakeBackup extends Component {
 
@@ -27,9 +28,8 @@ export default class RecoveryMakeBackup extends Component {
   state = {
     initializing: false,
     showPhrase: false,
-    pin: "",
-    validationForced: false,
     makingBackup: false,
+    email: null,
   };
 
   initRecovery() {
@@ -80,12 +80,16 @@ export default class RecoveryMakeBackup extends Component {
       makingBackup: false,
     });
 
-    sendBackupMail(this.props.backup, {from: 'ivarderksen@gmail.com'})
-    //TODO: Replace email address with address from a certain field
+    sendBackupMail(this.props.backup, {from: this.state.email})
+  }
+
+  changeEmail(email) {
+    this.setState({
+      email: email,
+    })
   }
 
   render() {
-    console.log("RecoveryMakeBackup")
     if (this.props.status.includes('backup')) {
       return this.renderMakeBackup();
     }
@@ -95,34 +99,52 @@ export default class RecoveryMakeBackup extends Component {
   }
 
   renderMakeBackup() {
-    let button = null, done = null;
+    let button = null, content = null;
     if (!this.state.makingBackup) {
       button =
         <View style={[{ width: "90%", margin: 10}]}>
           <Button title={'Make backup'} onPress={::this.makeBackup}/>
         </View>;
+
       if (this.props.status === 'backupReady') {
-        done = <CardItem><Text>Your backup has been sent.</Text></CardItem>
+        content = <CardItem><Text>Your backup has been sent.</Text></CardItem>
+      }
+      else {
+        content =
+          <CardItem>
+            <Form style={{width: '100%'}}>
+              <FormInput
+                inputType="email"
+                key={`email`}
+                label={`Email`}
+                onChange={::this.changeEmail}
+                initialValue={this.state.email}
+                validationForced={false}
+                autoFocus={true}
+                showInvalidMessage={true}
+              />
+            </Form>
+          </CardItem>;
       }
     }
 
     return (
-      <Container>
+      <KeyboardAwareContainer>
         <PaddedContent>
           <Card>
             <CardItem>
               <Text>
                 By pressing the button below a backup file of all your credentials will be generated. This backup will
-                be sent to you by mail.
+                be sent by email to the following address:
               </Text>
             </CardItem>
-            { done }
+            { content }
           </Card>
         </PaddedContent>
         <Footer>
           { button }
         </Footer>
-      </Container>
+      </KeyboardAwareContainer>
     );
   }
 
@@ -180,8 +202,21 @@ export default class RecoveryMakeBackup extends Component {
     );
   }
 
+  componentWillMount() {
+    if (!this.state.email) {
+      this.props.credentials.map(credential => {
+        if (credential.Name === 'email') {
+          // Return first email address found
+          //TODO: deal with multiple email addresses
+          this.setState({
+            email: credential.Attributes[0].en,
+          });
+        }
+      });
+    }
+  }
+
   componentDidUpdate(prevProps) {
-    console.log("change!");
     if (prevProps.status !== this.props.status && this.props.status === 'showPhrase') {
       this.setState({
         ...this.state,

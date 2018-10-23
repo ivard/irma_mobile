@@ -23,6 +23,9 @@ const mapStateToProps = (state) => {
       isConfigured,
       errorStatus,
       errorMessage,
+    },
+    credentials: {
+      credentials,
     }
   } = state;
 
@@ -35,6 +38,8 @@ const mapStateToProps = (state) => {
     isConfigured,
     errorStatus,
     errorMessage,
+
+    credentials,
   };
 };
 
