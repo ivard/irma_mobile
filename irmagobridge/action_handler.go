@@ -134,6 +134,7 @@ func (ah *ActionHandler) RemoveAll() (err error) {
 
 	sendCredentials()
 	sendEnrollmentStatus()
+	sendRecoveryIsConfigured()
 	return nil
 }
 
