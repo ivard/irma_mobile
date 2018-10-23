@@ -25,7 +25,10 @@ export default function recovery(state = initialState, action) {
   };
   switch(action.type) {
     case 'IrmaClient.RecoveryReset': {
-      return initialState;
+      return {
+        ...initialState,
+        status: action.status,
+      };
     }
 
     case 'IrmaClient.RecoveryIsConfigured': {

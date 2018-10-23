@@ -87,8 +87,13 @@ func recoveredReceiveAction(actionJSONString string) {
 		}
 
 	case "RecoveryReset":
+		isConfigured := ""
+		if client.RecoveryIsConfigured() {
+			isConfigured = "backupConfigured"
+		}
 		sendAction(&OutgoingAction{
-			"type": "IrmaClient.RecoveryReset",
+			"type":   "IrmaClient.RecoveryReset",
+			"status": isConfigured,
 		})
 
 	case "RecoveryLoadBackup":
