@@ -90,7 +90,6 @@ export default class RecoveryBackupContainer extends Component {
     if (proceed && !pin) {
       this.setState({
         validationForced: true,
-        pinRequestReady: false,
       });
     }
     else {
@@ -134,7 +133,7 @@ export default class RecoveryBackupContainer extends Component {
     else if (status === 'requestPin' && this.state.pinRequestReady) {
       return this.renderPinRequest();
     }
-    else if (status === 'blocked' && this.state.pin !== "") {
+    else if (status === 'blocked' && this.state.pin !== '') {
       return <Card><CardItem><Text>
         Your PIN is blocked for {blocked} seconds. Please try again later.
       </Text></CardItem></Card>
