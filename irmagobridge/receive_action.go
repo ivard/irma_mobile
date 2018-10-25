@@ -142,6 +142,15 @@ func recoveredReceiveAction(actionJSONString string) {
 		log.Println("Making backup")
 		go client.MakeBackup(recoveryHandler)
 
+	case "RecoveryDeletePhrase":
+		log.Println("Delete previous phrase")
+		err := client.RecoveryDeleteConfiguration()
+		if err != nil {
+			recoveryHandler.RecoveryError(err)
+		} else {
+			sendRecoveryIsConfigured()
+		}
+
 	default:
 		err = errors.Errorf("Unrecognized action type %s", actionType)
 	}

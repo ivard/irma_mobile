@@ -5,12 +5,10 @@ import {
   H3,
   Text, View, Footer, Form,
 } from 'native-base';
-import {Button, Alert, Platform, BackHandler} from 'react-native'
+import {Button, Alert} from 'react-native'
 import Card from 'lib/UnwrappedCard';
 import PaddedContent from 'lib/PaddedContent';
 import PropTypes from 'prop-types';
-import {connect} from "react-redux";
-import PinEntry from "../Session/children/PinEntry";
 import KeyboardAwareContainer from "../../lib/KeyboardAwareContainer";
 import {sendBackupMail} from "lib/mail";
 import FormInput from "../../lib/form/FormInput";
@@ -56,7 +54,7 @@ export default class RecoveryMakeBackup extends Component {
         {text: 'Cancel', style: 'cancel'},
         {text: 'OK', onPress: () => this.props.changePinRequestReady(true)},
       ],
-      { cancelable: false }
+      { cancelable: true }
     );
   }
 
@@ -83,9 +81,23 @@ export default class RecoveryMakeBackup extends Component {
     sendBackupMail(this.props.backup, {from: this.state.email})
   }
 
+  phraseForgotten() {
+    const {dispatch} = this.props;
+    Alert.alert(
+      'Continue?',
+      'Recovery phrases cannot be restored. For new backups you need to generate a new recovery phrase. If you ' +
+      'continue, your previous phrase is deleted from this device. Are you sure you want to continue?',
+      [
+        {text: 'Cancel', style: 'cancel'},
+        {text: 'OK', onPress: () => dispatch({type: 'IrmaBridge.RecoveryDeletePhrase'})},
+      ],
+      { cancelable: true }
+    )
+  }
+
   changeEmail(email) {
     this.setState({
-      email: email,
+      email,
     })
   }
 
@@ -99,9 +111,14 @@ export default class RecoveryMakeBackup extends Component {
   }
 
   renderMakeBackup() {
-    let button = null, content = null;
+    let makeButton = null, content = null;
+    let lostPhraseButton =
+      <View style={[{ width: "80%", margin: 10}]}>
+        <Button title={'Recovery phrase lost?'} color={'grey'} onPress={::this.phraseForgotten}/>
+      </View>;
+
     if (!this.state.makingBackup) {
-      button =
+      makeButton =
         <View style={[{ width: "90%", margin: 10}]}>
           <Button title={'Make backup'} onPress={::this.makeBackup}/>
         </View>;
@@ -112,18 +129,21 @@ export default class RecoveryMakeBackup extends Component {
       else {
         content =
           <CardItem>
-            <Form style={{width: '100%'}}>
-              <FormInput
-                inputType="email"
-                key={`email`}
-                label={`Email`}
-                onChange={::this.changeEmail}
-                initialValue={this.state.email}
-                validationForced={false}
-                autoFocus={true}
-                showInvalidMessage={true}
-              />
-            </Form>
+            <View>
+              <Form style={{width: '100%'}}>
+                <FormInput
+                  inputType="email"
+                  key={`email`}
+                  label={`Email`}
+                  onChange={::this.changeEmail}
+                  initialValue={this.state.email}
+                  validationForced={false}
+                  autoFocus={true}
+                  showInvalidMessage={true}
+                />
+              </Form>
+              {lostPhraseButton}
+            </View>
           </CardItem>;
       }
     }
@@ -142,7 +162,7 @@ export default class RecoveryMakeBackup extends Component {
           </Card>
         </PaddedContent>
         <Footer>
-          { button }
+          { makeButton }
         </Footer>
       </KeyboardAwareContainer>
     );
