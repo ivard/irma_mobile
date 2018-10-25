@@ -76,6 +76,7 @@ const sidebarListItems = [
   {
     icon: {name: 'md-cloud-upload'},
     text: "Make backup",
+    visible: props => props.hasKeyshare,
     navigateTo: 'RecoveryMakeBackup'
   },
   {
